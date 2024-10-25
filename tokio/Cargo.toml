@@ -23,7 +23,7 @@ keywords = ["io", "async", "non-blocking", "futures"]
 
 [features]
 # Include nothing by default
-default = []
+default = ["macros"]
 
 # enable everything
 full = [
@@ -84,6 +84,7 @@ signal = [
 sync = []
 test-util = ["rt", "sync", "time"]
 time = []
+runtime-tracing = ["tracing", "dep:hopframe"]
 
 [dependencies]
 tokio-macros = { version = "~2.4.0", path = "../tokio-macros", optional = true }
@@ -102,6 +103,7 @@ socket2 = { version = "0.5.5", optional = true, features = ["all"] }
 # Requires `--cfg tokio_unstable` to enable.
 [target.'cfg(tokio_unstable)'.dependencies]
 tracing = { version = "0.1.29", default-features = false, features = ["std"], optional = true } # Not in full
+hopframe = { git = "https://github.com/mox692/hopframe.git", optional = true }
 
 # Currently unstable. The API exposed by these features may be broken at any time.
 # Requires `--cfg tokio_unstable` to enable.

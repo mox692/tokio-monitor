@@ -22,6 +22,8 @@ mod entry;
 mod select;
 
 use proc_macro::TokenStream;
+use quote::quote;
+use syn::{parse_macro_input, ItemFn};
 
 /// Marks async function to be executed by the selected runtime. This macro
 /// helps set up a `Runtime` without requiring the user to use
@@ -582,4 +584,35 @@ pub fn select_priv_declare_output_enum(input: TokenStream) -> TokenStream {
 #[doc(hidden)]
 pub fn select_priv_clean_pattern(input: TokenStream) -> TokenStream {
     select::clean_pattern_macro(input)
+}
+
+/// docs
+#[proc_macro_attribute]
+pub fn trace_on_pending_backtrace(_attr: TokenStream, item: TokenStream) -> TokenStream {
+    let function = parse_macro_input!(item as ItemFn);
+    let fn_name = &function.sig.ident;
+    let vis = &function.vis;
+    let generics = &function.sig.generics;
+    let inputs = &function.sig.inputs;
+    let output = &function.sig.output;
+    let body = &function.block;
+    let where_clause = &function.sig.generics.where_clause; // where句を取得
+
+    let gen = quote! {
+        #vis fn #fn_name #generics (#inputs) #output #where_clause {
+            let output = (|| #body)();
+            if let Poll::Pending = output {
+                #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+                {
+                    let bt = crate::util::trace::gen_backtrace();
+                    let bt = format!("{:?}", bt);
+                    crate::runtime::context::with_backtrace(|cx| {
+                        cx.set(Some(bt))
+                    });
+                }
+            }
+            output
+        }
+    };
+    gen.into()
 }

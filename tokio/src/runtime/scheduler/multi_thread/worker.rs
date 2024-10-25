@@ -69,7 +69,6 @@ use crate::runtime::{
 use crate::runtime::{context, TaskHooks};
 use crate::util::atomic_cell::AtomicCell;
 use crate::util::rand::{FastRand, RngSeedGenerator};
-
 use std::cell::RefCell;
 use std::task::Waker;
 use std::thread;
@@ -503,6 +502,9 @@ fn run(worker: Arc<Worker>) {
             defer: Defer::new(),
         });
 
+        #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+        tracing::trace!(name: "worker start", tokio_runtime_event = "start", target = "flihgt_recorder");
+
         context::set_scheduler(&cx, || {
             let cx = cx.expect_multi_thread();
 
@@ -593,7 +595,33 @@ impl Context {
 
         // Run the task
         coop::budget(|| {
-            task.run();
+            #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+            {
+                let task_name = { format!("task {}", task.id().0) };
+                let span = tracing::span!(
+                    tracing::Level::TRACE,
+                    "run_task",
+                    name = %task_name,
+                    tokio_runtime_event = "run_task",
+                    stacktrace = tracing::field::Empty
+                );
+                let _enter = span.enter();
+
+                task.run();
+
+                drop(_enter);
+
+                let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
+                    .flatten()
+                    .unwrap_or_default();
+
+                span.record("stacktrace", bt);
+            }
+            #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+            {
+                task.run();
+            }
+
             let mut lifo_polls = 0;
 
             // As long as there is budget remaining and a task exists in the
@@ -656,7 +684,35 @@ impl Context {
                 // Run the LIFO task, then loop
                 *self.core.borrow_mut() = Some(core);
                 let task = self.worker.handle.shared.owned.assert_owner(task);
-                task.run();
+
+                #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+                {
+                    let task_name = format!("task {}", task.id().0);
+                    let span = tracing::span!(
+                        tracing::Level::TRACE,
+                        "run_task",
+                        name = %task_name,
+                        tokio_runtime_event = "run_task",
+                        // stacktrace = %bt,
+                        stacktrace = tracing::field::Empty
+                    );
+                    let _enter = span.enter();
+
+                    task.run();
+
+                    drop(_enter);
+
+                    let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
+                        .flatten()
+                        .unwrap_or_default();
+
+                    span.record("stacktrace", bt);
+                }
+
+                #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+                {
+                    task.run();
+                }
             }
         })
     }
@@ -741,11 +797,28 @@ impl Context {
         // Store `core` in context
         *self.core.borrow_mut() = Some(core);
 
-        // Park thread
-        if let Some(timeout) = duration {
-            park.park_timeout(&self.worker.handle.driver, timeout);
-        } else {
-            park.park(&self.worker.handle.driver);
+        #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+        {
+            let span = tracing::span!(tracing::Level::TRACE, "park", tokio_runtime_event = "park");
+            let _enter = span.enter();
+
+            // Park thread
+            if let Some(timeout) = duration {
+                park.park_timeout(&self.worker.handle.driver, timeout);
+            } else {
+                park.park(&self.worker.handle.driver);
+            }
+            drop(_enter);
+            drop(span);
+        }
+        #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+        {
+            // Park thread
+            if let Some(timeout) = duration {
+                park.park_timeout(&self.worker.handle.driver, timeout);
+            } else {
+                park.park(&self.worker.handle.driver);
+            }
         }
 
         self.defer.wake();

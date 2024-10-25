@@ -652,6 +652,9 @@ cfg_macros! {
     #[doc(hidden)]
     pub use tokio_macros::select_priv_declare_output_enum;
 
+    #[doc(hidden)]
+    pub(crate) use tokio_macros::trace_on_pending_backtrace;
+
     /// Implementation detail of the `select!` macro. This macro is **not**
     /// intended to be used as part of the public API and is permitted to
     /// change.
