@@ -597,11 +597,10 @@ impl Context {
         coop::budget(|| {
             #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
             {
-                let task_name = { format!("task {}", task.id().0) };
                 let span = tracing::span!(
                     tracing::Level::TRACE,
                     "run_task",
-                    name = %task_name,
+                    name = task.id().0,
                     tokio_runtime_event = "run_task",
                     stacktrace = tracing::field::Empty
                 );
@@ -687,13 +686,11 @@ impl Context {
 
                 #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
                 {
-                    let task_name = format!("task {}", task.id().0);
                     let span = tracing::span!(
                         tracing::Level::TRACE,
                         "run_task",
-                        name = %task_name,
+                        name = task.id().0,
                         tokio_runtime_event = "run_task",
-                        // stacktrace = %bt,
                         stacktrace = tracing::field::Empty
                     );
                     let _enter = span.enter();
