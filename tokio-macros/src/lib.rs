@@ -596,7 +596,7 @@ pub fn trace_on_pending_backtrace(_attr: TokenStream, item: TokenStream) -> Toke
     let inputs = &function.sig.inputs;
     let output = &function.sig.output;
     let body = &function.block;
-    let where_clause = &function.sig.generics.where_clause; // where句を取得
+    let where_clause = &function.sig.generics.where_clause;
 
     let gen = quote! {
         #vis fn #fn_name #generics (#inputs) #output #where_clause {
