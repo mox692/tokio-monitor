@@ -9,12 +9,12 @@ license = "MIT"
 # [dependencies] instead, and delete the **path**.
 [dev-dependencies]
 tokio = { version = "1.0.0", path = "../tokio", features = ["full", "runtime-tracing"] }
-tracing-perfetto = { git = "https://github.com/mox692/tracing-perfetto", branch = "worker-trace" }
+tracing-perfetto = { path = "../tracing-perfetto" }
 tokio-util = { version = "0.7.0", path = "../tokio-util", features = ["full"] }
 tokio-stream = { version = "0.1", path = "../tokio-stream" }
 
 tracing = "0.1"
-hopframe = { git = "https://github.com/mox692/hopframe.git" }
+hopframe = { path = "../hopframe" }
 tracing-subscriber = { version = "0.3.1", default-features = false, features = ["fmt", "ansi", "env-filter", "tracing-log"] }
 bytes = "1.0.0"
 futures = { version = "0.3.0", features = ["thread-pool"]}

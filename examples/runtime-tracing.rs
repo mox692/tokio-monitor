@@ -1,9 +1,7 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
-use tracing_perfetto::external::tokio::{TokioPerfettoLayer, TokioPerfettoLayerBuilder};
-use tracing_perfetto::PerfettoLayer;
+use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
 use tracing_subscriber::prelude::*;
 
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
 fn main() {
     let layer = TokioPerfettoLayerBuilder::new()
         .file_name("./test.pftrace")
