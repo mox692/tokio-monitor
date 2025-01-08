@@ -103,7 +103,7 @@ socket2 = { version = "0.5.5", optional = true, features = ["all"] }
 # Requires `--cfg tokio_unstable` to enable.
 [target.'cfg(tokio_unstable)'.dependencies]
 tracing = { version = "0.1.29", default-features = false, features = ["std"], optional = true } # Not in full
-hopframe = { git = "https://github.com/mox692/hopframe.git", optional = true }
+hopframe = { path = "../hopframe", optional = true }
 
 # Currently unstable. The API exposed by these features may be broken at any time.
 # Requires `--cfg tokio_unstable` to enable.
