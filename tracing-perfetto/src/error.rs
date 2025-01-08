@@ -18,14 +18,12 @@ impl TracingPerfettoError {
     }
 }
 
-// `Error` トレイトを実装
 impl Error for TracingPerfettoError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         self.source.as_deref()
     }
 }
 
-// `Display` トレイトを実装
 impl fmt::Display for TracingPerfettoError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.message)?;
