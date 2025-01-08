@@ -651,7 +651,7 @@ impl Visit for DebugAnnotations {
 pub fn read_aslr_offset() -> crate::error::Result<u64> {
     use procfs::process::{MMapPath, Process};
 
-    fn read_aslr_offset_inner() ->  procfs::ProcResult<u64> {
+    fn read_aslr_offset_inner() -> procfs::ProcResult<u64> {
         let process = Process::myself()?;
         let exe = process.exe()?;
         let maps = &process.maps()?;
@@ -678,11 +678,9 @@ pub fn read_aslr_offset() -> crate::error::Result<u64> {
     }
 
     let result = read_aslr_offset_inner();
-    result.map_err(|e| {
-        crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e))
-    })
+    result
+        .map_err(|e| crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e)))
 }
-
 
 #[cfg(not(target_os = "linux"))]
 pub fn read_aslr_offset() -> crate::error::Result<u64> {
