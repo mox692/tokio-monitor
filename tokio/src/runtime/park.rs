@@ -112,7 +112,7 @@ impl Inner {
 
                 return;
             }
-            Err(actual) => panic!("inconsistent park state; actual = {}", actual),
+            Err(actual) => panic!("inconsistent park state; actual = {actual}"),
         }
 
         loop {
@@ -158,7 +158,7 @@ impl Inner {
 
                 return;
             }
-            Err(actual) => panic!("inconsistent park_timeout state; actual = {}", actual),
+            Err(actual) => panic!("inconsistent park_timeout state; actual = {actual}"),
         }
 
         // Wait with a timeout, and if we spuriously wake up or otherwise wake up
@@ -170,7 +170,7 @@ impl Inner {
         match self.state.swap(EMPTY, SeqCst) {
             NOTIFIED => {} // got a notification, hurray!
             PARKED => {}   // no notification, alas
-            n => panic!("inconsistent park_timeout state: {}", n),
+            n => panic!("inconsistent park_timeout state: {n}"),
         }
     }
 

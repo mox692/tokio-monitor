@@ -1,4 +1,43 @@
-# 1.41.0 (Oct 22th, 2024)
+# 1.42.0 (Dec 3rd, 2024)
+
+### Added
+
+- io: add `AsyncFd::{try_io, try_io_mut}` ([#6967])
+
+### Fixed
+
+- io: avoid `ptr->ref->ptr` roundtrip in RegistrationSet ([#6929])
+- runtime: do not defer `yield_now` inside `block_in_place` ([#6999])
+
+### Changes
+
+- io: simplify io readiness logic ([#6966])
+
+### Documented
+
+- net: fix docs for `tokio::net::unix::{pid_t, gid_t, uid_t}` ([#6791])
+- time: fix a typo in `Instant` docs ([#6982])
+
+[#6791]: https://github.com/tokio-rs/tokio/pull/6791
+[#6929]: https://github.com/tokio-rs/tokio/pull/6929
+[#6966]: https://github.com/tokio-rs/tokio/pull/6966
+[#6967]: https://github.com/tokio-rs/tokio/pull/6967
+[#6982]: https://github.com/tokio-rs/tokio/pull/6982
+[#6999]: https://github.com/tokio-rs/tokio/pull/6999
+
+# 1.41.1 (Nov 7th, 2024)
+
+### Fixed
+
+- metrics: fix bug with wrong number of buckets for the histogram ([#6957])
+- net: display `net` requirement for `net::UdpSocket` in docs ([#6938])
+- net: fix typo in `TcpStream` internal comment ([#6944])
+
+[#6957]: https://github.com/tokio-rs/tokio/pull/6957
+[#6938]: https://github.com/tokio-rs/tokio/pull/6938
+[#6944]: https://github.com/tokio-rs/tokio/pull/6944
+
+# 1.41.0 (Oct 22nd, 2024)
 
 ### Added
 
