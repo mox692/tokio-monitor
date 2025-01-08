@@ -10,6 +10,7 @@ pub struct TracingPerfettoError {
 }
 
 impl TracingPerfettoError {
+    #[allow(unused)]
     pub(crate) fn new(message: &str, source: Box<dyn Error>) -> Self {
         Self {
             message: message.to_string(),

@@ -3,7 +3,7 @@
 use bytes::Bytes;
 use bytes::BytesMut;
 use clap::Parser;
-use hopframe::{LookupAddress, SymbolMapBuilder};
+use hopframe::symbolize::{LookupAddress, SymbolMapBuilder};
 use prost::Message;
 use std::env;
 use std::fs::File;
