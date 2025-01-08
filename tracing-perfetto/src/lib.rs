@@ -1,3 +1,4 @@
+#![allow(rustdoc::invalid_html_tags)]
 #![forbid(unsafe_code)]
 
 use bytes::BytesMut;
