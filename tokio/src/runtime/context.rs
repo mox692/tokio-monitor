@@ -126,7 +126,17 @@ tokio_thread_local! {
             ))]
             trace: trace::Context::new(),
 
-            #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+            #[cfg(all(
+                tokio_unstable,
+                tokio_taskdump,
+                feature = "rt",
+                target_os = "linux",
+                any(
+                    target_arch = "aarch64",
+                    target_arch = "x86",
+                    target_arch = "x86_64"
+                )
+            ))]
             backtrace: Cell::new(None)
         }
     }
