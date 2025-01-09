@@ -5,6 +5,7 @@ use framehop::{
 use std::arch::asm;
 
 /// load libraries, configure cache or unwinder, etc.
+#[derive(Default)]
 pub struct UnwindBuilderX86_64 {}
 
 impl UnwindBuilderX86_64 {
@@ -23,11 +24,6 @@ impl UnwindBuilderX86_64 {
         }
     }
 }
-impl Default for UnwindBuilderX86_64 {
-    fn default() -> Self {
-        Self {}
-    }
-}
 
 pub struct StackUnwinderX86_64 {
     cache: CacheX86_64,
@@ -36,7 +32,7 @@ pub struct StackUnwinderX86_64 {
 }
 
 impl StackUnwinderX86_64 {
-    pub fn unwind<'a>(&'a mut self) -> UnwindIterator<'a> {
+    pub fn unwind(&mut self) -> UnwindIterator<'_> {
         #[allow(unused)]
         let (rip, regs) = {
             let mut rip = 0;
@@ -59,6 +55,7 @@ impl StackUnwinderX86_64 {
 }
 
 pub struct UnwindIterator<'a> {
+    #[allow(clippy::type_complexity)]
     inner: framehop::UnwindIterator<
         'a,
         'a,
