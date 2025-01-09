@@ -141,7 +141,16 @@ impl Registration {
     ///
     /// If called with a task context, notify the task when a new event is
     /// received.
-    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_ready(
         &self,
         cx: &mut Context<'_>,

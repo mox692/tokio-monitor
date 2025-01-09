@@ -398,7 +398,16 @@ impl Sleep {
         }
     }
 
-    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_elapsed(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Result<(), Error>> {
         let me = self.project();
 

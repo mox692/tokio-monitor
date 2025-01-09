@@ -286,7 +286,16 @@ impl<T, S: Semaphore> Rx<T, S> {
     }
 
     /// Receive the next value
-    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     pub(crate) fn recv(&mut self, cx: &mut Context<'_>) -> Poll<Option<T>> {
         use super::block::Read;
 
@@ -344,7 +353,16 @@ impl<T, S: Semaphore> Rx<T, S> {
     ///
     /// For `limit > 0`, receives up to limit values into `buffer`.
     /// For `limit == 0`, immediately returns Ready(0).
-    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     pub(crate) fn recv_many(
         &mut self,
         cx: &mut Context<'_>,
