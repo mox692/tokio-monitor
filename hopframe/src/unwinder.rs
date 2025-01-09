@@ -67,6 +67,7 @@ pub struct UnwindIterator<'a> {
 
 impl<'a> UnwindIterator<'a> {
     fn new(
+        #[allow(clippy::type_complexity)]
         inner: framehop::UnwindIterator<
             'a,
             'a,
