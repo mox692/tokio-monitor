@@ -73,7 +73,12 @@ struct Context {
     ))]
     trace: trace::Context,
 
-    #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+    #[cfg(all(
+        tokio_unstable,
+        feature = "runtime-tracing",
+        target_os = "linux",
+        target_arch = "x86_64"
+    ))]
     backtrace: Cell<Option<String>>,
 }
 
