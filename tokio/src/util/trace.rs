@@ -188,7 +188,12 @@ cfg_time! {
 }
 
 /// foo
-#[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+#[cfg(all(
+    tokio_unstable,
+    feature = "runtime-tracing",
+    target_arch = "x86_64",
+    target_os = "linux"
+))]
 pub(crate) fn gen_backtrace() -> String {
     use hopframe::unwinder::UnwindBuilderX86_64;
 
