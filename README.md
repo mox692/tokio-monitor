@@ -62,7 +62,7 @@ can use [Perfetto-UI](https://ui.perfetto.dev/) to visualize the trace.
 
 # Symbolize
 ```bash
-cd tracing-perfetto \ 
+cd tracing-perfetto \
 cargo run --features symbolize --package tracing-perfetto --bin perfetto_symbolize \
     -- --bin-path ./target/debug/examples/runtime-tracing  --perfetto-trace-log ./test.pftrace
 ```
