@@ -5,7 +5,7 @@
     unreachable_pub
 )]
 
-#[cfg(feature = "symbolize")]
-pub mod symbolize;
+// #[cfg(feature = "symbolize")]
+// pub mod symbolize;
 
 pub mod unwinder;
