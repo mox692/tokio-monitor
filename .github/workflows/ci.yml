@@ -763,7 +763,8 @@ jobs:
     strategy:
       matrix:
         run:
-          - os: windows-latest
+          # Windows is not supported yet.
+          # - os: windows-latest
           - os: ubuntu-latest
             RUSTFLAGS: --cfg tokio_taskdump
             RUSTDOCFLAGS: --cfg tokio_taskdump
