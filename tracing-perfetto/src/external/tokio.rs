@@ -71,15 +71,3 @@ impl TokioPerfettoLayerBuilder {
         TokioPerfettoLayer { inner }
     }
 }
-
-#[test]
-fn foo() {
-    use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
-    use tracing_subscriber::prelude::*;
-
-    let layer = TokioPerfettoLayerBuilder::new()
-        .file_name("./trace.pftrace")
-        .build();
-
-    tracing_subscriber::registry().with(layer).init();
-}

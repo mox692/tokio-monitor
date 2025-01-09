@@ -63,3 +63,4 @@
 // async fn main() {
 //     compile_error!("`symbolize` feature is required to execute this examples.");
 // }
+fn main() {}

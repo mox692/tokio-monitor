@@ -14,7 +14,7 @@ Just replace the dependency:
 
 Here is a simple example:
 
-```rust
+```rust,ignore
 use std::sync::atomic::{AtomicUsize, Ordering};
 use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
 use tracing_subscriber::prelude::*;
