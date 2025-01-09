@@ -190,11 +190,13 @@ overweighing
 parker
 parsers
 peekable
+perfetto
 PGID
 PID
 plaintext
 poller
 POSIX
+protobuf
 proxied
 qos
 RAII
@@ -284,6 +286,7 @@ unsets
 Unsets
 unsynchronized
 untrusted
+unwinder
 usecases
 Valgrind
 Varghese

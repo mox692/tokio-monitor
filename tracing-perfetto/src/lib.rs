@@ -79,13 +79,13 @@ impl<W: PerfettoWriter> PerfettoLayer<W> {
         }
     }
 
-    /// Configures whether or not spans/events shoulde be recored with their metadata and fields.
+    /// Configures whether or not spans/events should be recorded with their metadata and fields.
     pub fn with_debug_annotations(mut self, value: bool) -> Self {
         self.config.debug_annotations = value;
         self
     }
 
-    /// Configures whether or not spans/events be recored based on the occurrence of a field name.
+    /// Configures whether or not spans/events be recorded based on the occurrence of a field name.
     ///
     /// Sometimes, not all the events/spans should be treated as perfetto trace, you can append a
     /// field to indicate that this even/span should be captured into trace:
