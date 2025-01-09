@@ -452,6 +452,34 @@ macro_rules! cfg_not_taskdump {
     };
 }
 
+macro_rules! cfg_runtime_tracing {
+    ($($item:item)*) => {
+        $(
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
+            $item
+        )*
+    };
+}
+
+macro_rules! cfg_not_runtime_tracing {
+    ($($item:item)*) => {
+        $(
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing", 
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
+            $item
+        )*
+    };
+}
+
 macro_rules! cfg_test_util {
     ($($item:item)*) => {
         $(

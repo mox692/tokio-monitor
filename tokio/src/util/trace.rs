@@ -187,19 +187,14 @@ cfg_time! {
     }
 }
 
-/// foo
-#[cfg(all(
-    tokio_unstable,
-    feature = "runtime-tracing",
-    target_arch = "x86_64",
-    target_os = "linux"
-))]
-pub(crate) fn gen_backtrace() -> String {
-    use hopframe::unwinder::UnwindBuilderX86_64;
+cfg_runtime_tracing! {
+    pub(crate) fn gen_backtrace() -> String {
+        use hopframe::unwinder::UnwindBuilderX86_64;
 
-    let mut unwinder = UnwindBuilderX86_64::new().build();
-    let iter = unwinder.unwind();
+        let mut unwinder = UnwindBuilderX86_64::new().build();
+        let iter = unwinder.unwind();
 
-    let s: String = iter.map(|f| format!("{:?},", f.address())).collect();
-    s
+        let s: String = iter.map(|f| format!("{:?},", f.address())).collect();
+        s
+    }
 }
