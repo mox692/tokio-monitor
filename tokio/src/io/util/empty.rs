@@ -89,16 +89,6 @@ impl AsyncRead for Empty {
 
 impl AsyncBufRead for Empty {
     #[inline]
-    #[cfg_attr(
-        all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ),
-        crate::trace_on_pending_backtrace
-    )]
     fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<&[u8]>> {
         ready!(crate::trace::trace_leaf(cx));
         ready!(poll_proceed_and_make_progress(cx));
