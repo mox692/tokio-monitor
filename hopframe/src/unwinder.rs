@@ -54,27 +54,20 @@ impl StackUnwinderX86_64 {
     }
 }
 
+pub type UnwindIteratorX86_64<'a> = framehop::UnwindIterator<
+    'a,
+    'a,
+    'a,
+    UnwinderX86_64<Vec<u8>>,
+    Box<dyn FnMut(u64) -> Result<u64, ()>>,
+>;
+
 pub struct UnwindIterator<'a> {
-    #[allow(clippy::type_complexity)]
-    inner: framehop::UnwindIterator<
-        'a,
-        'a,
-        'a,
-        UnwinderX86_64<Vec<u8>>,
-        Box<dyn FnMut(u64) -> Result<u64, ()>>,
-    >,
+    inner: UnwindIteratorX86_64<'a>,
 }
 
 impl<'a> UnwindIterator<'a> {
-    fn new(
-        #[allow(clippy::type_complexity)] inner: framehop::UnwindIterator<
-            'a,
-            'a,
-            'a,
-            UnwinderX86_64<Vec<u8>>,
-            Box<dyn FnMut(u64) -> Result<u64, ()>>,
-        >,
-    ) -> Self {
+    fn new(inner: UnwindIteratorX86_64<'a>) -> Self {
         Self { inner }
     }
 }
