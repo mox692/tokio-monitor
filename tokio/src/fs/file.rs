@@ -580,7 +580,7 @@ impl File {
 }
 
 impl AsyncRead for File {
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_read(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -682,7 +682,7 @@ impl AsyncSeek for File {
         }
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_complete(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<u64>> {
         ready!(crate::trace::trace_leaf(cx));
         let inner = self.inner.get_mut();
@@ -715,7 +715,7 @@ impl AsyncSeek for File {
 }
 
 impl AsyncWrite for File {
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -787,7 +787,7 @@ impl AsyncWrite for File {
         }
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_write_vectored(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -863,14 +863,14 @@ impl AsyncWrite for File {
         true
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         ready!(crate::trace::trace_leaf(cx));
         let inner = self.inner.get_mut();
         inner.poll_flush(cx)
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         ready!(crate::trace::trace_leaf(cx));
         self.poll_flush(cx)
@@ -947,7 +947,7 @@ impl Inner {
         poll_fn(|cx| self.poll_complete_inflight(cx)).await;
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_complete_inflight(&mut self, cx: &mut Context<'_>) -> Poll<()> {
         ready!(crate::trace::trace_leaf(cx));
         match self.poll_flush(cx) {

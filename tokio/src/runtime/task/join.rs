@@ -317,7 +317,7 @@ impl<T> Unpin for JoinHandle<T> {}
 impl<T> Future for JoinHandle<T> {
     type Output = super::Result<T>;
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
         ready!(crate::trace::trace_leaf(cx));
         let mut ret = Poll::Pending;

@@ -51,7 +51,7 @@ cfg_io_util! {
 
 impl AsyncRead for Repeat {
     #[inline]
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(feature = "macros", crate::trace_on_pending_backtrace)]
     fn poll_read(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
