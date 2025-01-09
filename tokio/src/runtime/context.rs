@@ -219,10 +219,4 @@ cfg_rt! {
         }
     }
 
-    cfg_not_runtime_tracing! {
-        pub(crate) fn with_backtrace<R>(_f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
-            // Do nothing
-            None
-        }
-    }
 }
