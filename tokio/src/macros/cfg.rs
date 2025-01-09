@@ -471,7 +471,7 @@ macro_rules! cfg_not_runtime_tracing {
         $(
             #[cfg(not(all(
                 tokio_unstable,
-                feature = "runtime-tracing", 
+                feature = "runtime-tracing",
                 target_os = "linux",
                 target_arch = "x86_64"
             )))]
