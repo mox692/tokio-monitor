@@ -651,37 +651,39 @@ impl Visit for DebugAnnotations {
 
 #[cfg(target_os = "linux")]
 pub fn read_aslr_offset() -> crate::error::Result<u64> {
-    use procfs::process::{MMapPath, Process};
+    // use procfs::process::{MMapPath, Process};
 
-    fn read_aslr_offset_inner() -> procfs::ProcResult<u64> {
-        let process = Process::myself()?;
-        let exe = process.exe()?;
-        let maps = &process.maps()?;
-        let mut addresses: Vec<u64> = maps
-            .iter()
-            .filter_map(|map| {
-                let MMapPath::Path(bin_path) = &map.pathname else {
-                    return None;
-                };
-                if bin_path != &exe {
-                    return None;
-                }
+    // fn read_aslr_offset_inner() -> procfs::ProcResult<u64> {
+    //     let process = Process::myself()?;
+    //     let exe = process.exe()?;
+    //     let maps = &process.maps()?;
+    //     let mut addresses: Vec<u64> = maps
+    //         .iter()
+    //         .filter_map(|map| {
+    //             let MMapPath::Path(bin_path) = &map.pathname else {
+    //                 return None;
+    //             };
+    //             if bin_path != &exe {
+    //                 return None;
+    //             }
 
-                return Some(map.address.0);
-            })
-            .collect();
+    //             return Some(map.address.0);
+    //         })
+    //         .collect();
 
-        addresses.sort();
-        if let Some(addr) = addresses.get(0) {
-            Ok(*addr)
-        } else {
-            panic!("no memory map error.")
-        }
-    }
+    //     addresses.sort();
+    //     if let Some(addr) = addresses.get(0) {
+    //         Ok(*addr)
+    //     } else {
+    //         panic!("no memory map error.")
+    //     }
+    // }
 
-    let result = read_aslr_offset_inner();
-    result
-        .map_err(|e| crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e)))
+    // let result = read_aslr_offset_inner();
+    // result
+    //     .map_err(|e| crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e)))
+
+    Ok(0)
 }
 
 #[cfg(not(target_os = "linux"))]

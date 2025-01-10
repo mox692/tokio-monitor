@@ -7,8 +7,8 @@ license = "MIT/Apache-2.0"
 [dependencies]
 framehop = { version = "0.13", default-features = false, features = ["std"] }
 # wholesym = { git = "https://github.com/mox692/samply.git", branch = "fix-samply-symbols-compile-error", optional = true }
-[target.'cfg(target_os = "linux")'.dependencies]
-procfs = "0.16"
+#[target.'cfg(target_os = "linux")'.dependencies]
+#procfs = "0.16"
 
 [features]
 default = []
@@ -18,6 +18,7 @@ default = []
 tokio = { version = "1.38.0", features = ["full"] } # Feature "macros" for #[tokio::test]
 criterion = "0.5.1"
 backtrace = "0.3"
+procfs = "0.16"
 
 [[bench]]
 name = "framehop_vs_backtrace"
