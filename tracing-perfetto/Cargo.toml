@@ -35,7 +35,7 @@ tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # hopframe = { path = "../hopframe", optional = true, features = ["symbolize"] }
-procfs = "0.16"
+# procfs = "0.16"
 
 [build-dependencies]
 prost-build = "0.12"
