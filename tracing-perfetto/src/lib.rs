@@ -90,7 +90,7 @@ impl<W: PerfettoWriter> PerfettoLayer<W> {
     /// Sometimes, not all the events/spans should be treated as perfetto trace, you can append a
     /// field to indicate that this even/span should be captured into trace:
     ///
-    /// ```rust
+    /// ```rust,no_run
     /// use tracing_perfetto::PerfettoLayer;
     /// use tracing_subscriber::{layer::SubscriberExt, Registry, prelude::*};
     ///
