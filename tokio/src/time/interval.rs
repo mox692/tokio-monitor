@@ -431,9 +431,9 @@ impl Interval {
     /// }
     /// ```
     pub async fn tick(&mut self) -> Instant {
-        #[cfg(all(tokio_unstable, feature = "tracing"))]
+        #[cfg(all(tokio_unstable, feature = "tracing", feature = "rt"))]
         let resource_span = self.resource_span.clone();
-        #[cfg(all(tokio_unstable, feature = "tracing"))]
+        #[cfg(all(tokio_unstable, feature = "tracing", feature = "rt"))]
         let instant = trace::async_op(
             || poll_fn(|cx| self.poll_tick(cx)),
             resource_span,
@@ -441,7 +441,7 @@ impl Interval {
             "poll_tick",
             false,
         );
-        #[cfg(not(all(tokio_unstable, feature = "tracing")))]
+        #[cfg(not(all(tokio_unstable, feature = "tracing", feature = "rt")))]
         let instant = poll_fn(|cx| self.poll_tick(cx));
 
         instant.await

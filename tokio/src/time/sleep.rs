@@ -233,10 +233,12 @@ pin_project! {
     }
 }
 
-cfg_trace! {
-    #[derive(Debug)]
-    struct Inner {
-        ctx: trace::AsyncOpTracingCtx,
+cfg_rt! {
+    cfg_trace! {
+        #[derive(Debug)]
+        struct Inner {
+            ctx: trace::AsyncOpTracingCtx,
+        }
     }
 }
 
@@ -256,7 +258,7 @@ impl Sleep {
         use crate::runtime::scheduler;
         let handle = scheduler::Handle::current();
         let entry = TimerEntry::new(handle, deadline);
-        #[cfg(all(tokio_unstable, feature = "tracing"))]
+        #[cfg(all(tokio_unstable, feature = "tracing", feature = "rt"))]
         let inner = {
             let handle = scheduler::Handle::current();
             let clock = handle.driver().clock();
