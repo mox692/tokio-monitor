@@ -1,4 +1,4 @@
-//! An AtomicU64 type that can be used in platforms where 64bit atomic is not supported.
+//! An AtomicU64 type that can be used in platforms where 64 bit atomic is not supported.
 
 use std::sync::atomic::Ordering;
 

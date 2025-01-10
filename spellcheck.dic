@@ -42,6 +42,7 @@ api
 APIs
 async
 atomics
+AtomicU64
 awaitable
 backend
 backpressure
