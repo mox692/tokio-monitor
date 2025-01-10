@@ -6,7 +6,7 @@ use bytes::BytesMut;
 use idl::InternedData;
 use prost::Message;
 use std::io::Write;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+use std::sync::atomic::{AtomicBool, Ordering};
 use tracing::field::Field;
 use tracing::field::Visit;
 use tracing::span;
@@ -20,13 +20,25 @@ use tracing_subscriber::Layer;
 
 pub mod error;
 pub mod external;
+mod util;
+
+use util::atomic_u64::AtomicU64;
 
 mod idl {
     include!(concat!(env!("OUT_DIR"), "/perfetto.protos.rs"));
 }
 
 thread_local! {
-    static THREAD_TRACK_UUID: AtomicU64 = AtomicU64::new(rand::random::<u64>());
+    #[cfg(target_has_atomic = "64")]
+    static THREAD_TRACK_UUID: AtomicU64 = AtomicU64::new(
+        rand::random::<u64>()
+    );
+
+    #[cfg(not(target_has_atomic = "64"))]
+    static THREAD_TRACK_UUID: AtomicU64 = AtomicU64::new(
+        rand::random::<u32>()
+    );
+
     static THREAD_DESCRIPTOR_SENT: AtomicBool = AtomicBool::new(false);
 }
 
