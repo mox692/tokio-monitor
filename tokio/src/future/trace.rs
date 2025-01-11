@@ -1,5 +1,6 @@
 use std::future::Future;
 
+#[allow(dead_code)]
 pub(crate) trait InstrumentedFuture: Future {
     fn id(&self) -> Option<tracing::Id>;
 }

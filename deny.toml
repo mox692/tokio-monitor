@@ -7,6 +7,7 @@ all-features = true
 allow = [
     "MIT",
     "Apache-2.0",
+    "Unicode-3.0",
 ]
 exceptions = [
     { allow = ["Unicode-3.0", "Unicode-DFS-2016"], crate = "unicode-ident" },
@@ -14,8 +15,10 @@ exceptions = [
 
 [bans]
 multiple-versions = "allow"
-wildcards = "deny"
+# Currently tokio-monitor uses wildcards deps
+# wildcards = "deny"
 
 [sources]
 unknown-registry = "deny"
-unknown-git = "deny"
+# Currently tokio-monitor uses git deps
+# unknown-git = "deny"
