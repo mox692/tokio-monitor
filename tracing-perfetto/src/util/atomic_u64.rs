@@ -21,7 +21,7 @@ impl AtomicU64 {
     #[cfg(not(target_has_atomic = "64"))]
     pub(crate) fn new(x: u32) -> Self {
         Self {
-            inner: std::sync::atomic::AtomicU32::new(x as u64),
+            inner: std::sync::atomic::AtomicU32::new(x),
         }
     }
 
