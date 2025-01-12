@@ -73,6 +73,7 @@ struct Context {
     ))]
     trace: trace::Context,
 
+    #[allow(unused)]
     #[cfg(all(
         tokio_unstable,
         feature = "runtime-tracing",
@@ -219,6 +220,7 @@ cfg_rt! {
     }
 
     cfg_runtime_tracing! {
+        #[allow(unused)]
         pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
             CONTEXT.try_with(|c| f(&c.backtrace)).ok()
         }

@@ -188,6 +188,7 @@ cfg_time! {
 }
 
 cfg_runtime_tracing! {
+    #[allow(unused)]
     pub(crate) fn gen_backtrace() -> String {
         use hopframe::unwinder::UnwindBuilderX86_64;
 
