@@ -1,6 +1,8 @@
 #![allow(rustdoc::invalid_html_tags)]
 #![allow(clippy::all)] // Prevent clippy from inspecting generated code
 #![forbid(unsafe_code)]
+// TODO: fix
+#![cfg(not(target_os = "windows"))]
 
 use bytes::BytesMut;
 use idl::InternedData;
