@@ -1,3 +1,4 @@
+#[cfg(not(windows))]
 fn main() -> std::io::Result<()> {
     let protoc = prost_build::protoc_from_env();
     if std::process::Command::new(protoc)
@@ -14,3 +15,6 @@ fn main() -> std::io::Result<()> {
     prost_build::compile_protos(&["protos/perfetto_trace.proto"], &["protos"])?;
     Ok(())
 }
+
+#[cfg(windows)]
+fn main() -> std::io::Result<()> {}
