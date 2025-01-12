@@ -17,4 +17,6 @@ fn main() -> std::io::Result<()> {
 }
 
 #[cfg(windows)]
-fn main() -> std::io::Result<()> {}
+fn main() -> std::io::Result<()> {
+    Ok(())
+}
