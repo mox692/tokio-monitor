@@ -709,20 +709,20 @@ jobs:
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace
+          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private
+          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
       - name: "check --all-features --unstable -Z minimal-versions"
         env:
           RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace
+          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private
+          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
 
   fmt:
     name: fmt
