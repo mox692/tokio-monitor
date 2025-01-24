@@ -449,6 +449,7 @@ impl<S: Schedule> LocalNotified<S> {
         raw.poll();
     }
 
+    #[allow(dead_code)]
     #[cfg(all(
         tokio_unstable,
         feature = "runtime-tracing",
