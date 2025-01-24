@@ -233,20 +233,15 @@ pin_project! {
     }
 }
 
-cfg_rt! {
-    cfg_trace! {
-        #[derive(Debug)]
-        struct Inner {
-            ctx: trace::AsyncOpTracingCtx,
-        }
-    }
+#[cfg(all(tokio_unstable, feature = "tracing"))]
+#[derive(Debug)]
+struct Inner {
+    ctx: trace::AsyncOpTracingCtx,
 }
 
-cfg_not_trace! {
-    #[derive(Debug)]
-    struct Inner {
-    }
-}
+#[cfg(not(all(tokio_unstable, feature = "tracing")))]
+#[derive(Debug)]
+struct Inner {}
 
 impl Sleep {
     #[cfg_attr(not(all(tokio_unstable, feature = "tracing")), allow(unused_variables))]
@@ -258,7 +253,7 @@ impl Sleep {
         use crate::runtime::scheduler;
         let handle = scheduler::Handle::current();
         let entry = TimerEntry::new(handle, deadline);
-        #[cfg(all(tokio_unstable, feature = "tracing", feature = "rt"))]
+        #[cfg(all(tokio_unstable, feature = "tracing"))]
         let inner = {
             let handle = scheduler::Handle::current();
             let clock = handle.driver().clock();
