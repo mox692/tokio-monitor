@@ -233,18 +233,15 @@ pin_project! {
     }
 }
 
-cfg_trace! {
-    #[derive(Debug)]
-    struct Inner {
-        ctx: trace::AsyncOpTracingCtx,
-    }
+#[cfg(all(tokio_unstable, feature = "tracing"))]
+#[derive(Debug)]
+struct Inner {
+    ctx: trace::AsyncOpTracingCtx,
 }
 
-cfg_not_trace! {
-    #[derive(Debug)]
-    struct Inner {
-    }
-}
+#[cfg(not(all(tokio_unstable, feature = "tracing")))]
+#[derive(Debug)]
+struct Inner {}
 
 impl Sleep {
     #[cfg_attr(not(all(tokio_unstable, feature = "tracing")), allow(unused_variables))]
@@ -398,7 +395,16 @@ impl Sleep {
         }
     }
 
-    #[crate::trace_on_pending_backtrace]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_elapsed(self: Pin<&mut Self>, cx: &mut task::Context<'_>) -> Poll<Result<(), Error>> {
         let me = self.project();
 
