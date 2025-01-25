@@ -719,7 +719,7 @@ jobs:
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
+          cargo hack --remove-dev-deps --workspace
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
           cargo hack check --all-features --ignore-private --exclude tracing-perfetto

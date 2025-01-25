@@ -508,7 +508,10 @@ fn run(worker: Arc<Worker>) {
             target_os = "linux",
             target_arch = "x86_64"
         ))]
-        tracing::trace!(name: "worker start", tokio_runtime_event = "start", target = "flihgt_recorder");
+        tracing::trace!(
+            tokio_runtime_event = "worker start",
+            target = "flihgt_recorder"
+        );
 
         context::set_scheduler(&cx, || {
             let cx = cx.expect_multi_thread();
@@ -624,7 +627,7 @@ impl Context {
                     .flatten()
                     .unwrap_or_default();
 
-                span.record("stacktrace", bt);
+                span.record("stacktrace", &bt.as_str());
             }
 
             #[cfg(not(all(
@@ -724,7 +727,7 @@ impl Context {
                         .flatten()
                         .unwrap_or_default();
 
-                    span.record("stacktrace", bt);
+                    span.record("stacktrace", &bt.as_str());
                 }
 
                 #[cfg(not(all(
