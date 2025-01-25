@@ -1,10 +1,8 @@
-#![cfg(not(target_os = "windows"))]
-
-use std::sync::atomic::{AtomicUsize, Ordering};
-use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
-use tracing_subscriber::prelude::*;
-
+#[cfg(not(target_os = "windows"))]
 fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
+    use tracing_subscriber::prelude::*;
     let layer = TokioPerfettoLayerBuilder::new()
         .file_name("./test.pftrace")
         .build();
@@ -47,3 +45,6 @@ async fn baz() {
         let _ = handle.await;
     }
 }
+
+#[cfg(target_os = "windows")]
+fn main() {}
