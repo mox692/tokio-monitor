@@ -233,15 +233,18 @@ pin_project! {
     }
 }
 
-#[cfg(all(tokio_unstable, feature = "tracing"))]
-#[derive(Debug)]
-struct Inner {
-    ctx: trace::AsyncOpTracingCtx,
+cfg_trace! {
+    #[derive(Debug)]
+    struct Inner {
+        ctx: trace::AsyncOpTracingCtx,
+    }
 }
 
-#[cfg(not(all(tokio_unstable, feature = "tracing")))]
-#[derive(Debug)]
-struct Inner {}
+cfg_not_trace! {
+    #[derive(Debug)]
+    struct Inner {
+    }
+}
 
 impl Sleep {
     #[cfg_attr(not(all(tokio_unstable, feature = "tracing")), allow(unused_variables))]
