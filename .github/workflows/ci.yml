@@ -456,6 +456,7 @@ jobs:
         with:
           rust-toolchain: ${{ env.rust_stable }}
           release-type: minor
+          package: tokio
 
   cross-check:
     name: cross-check
