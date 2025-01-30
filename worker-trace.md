@@ -29,7 +29,7 @@ The trace output would be created in your current directory `./trace.pftrace`.
 
 # Symbolize
 ```bash
-cd tracing-perfetto \ 
+cd tracing-perfetto \
 cargo run --features symbolize --package tracing-perfetto --bin perfetto_symbolize \
     -- --bin-path ./target/debug/examples/runtime-tracing  --perfetto-trace-log ./test.pftrace
 ```

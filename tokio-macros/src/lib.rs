@@ -602,14 +602,26 @@ pub fn trace_on_pending_backtrace(_attr: TokenStream, item: TokenStream) -> Toke
         #vis fn #fn_name #generics (#inputs) #output #where_clause {
             let output = (|| #body)();
             if let Poll::Pending = output {
-                #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
-                {
-                    let bt = crate::util::trace::gen_backtrace();
-                    let bt = format!("{:?}", bt);
-                    crate::runtime::context::with_backtrace(|cx| {
-                        cx.set(Some(bt))
-                    });
-                }
+                #[cfg(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                ))]
+                let bt = crate::util::trace::gen_backtrace();
+
+                #[cfg(not(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                )))]
+                let bt = String::new();
+
+                let bt = format!("{:?}", bt);
+                crate::runtime::context::with_backtrace(|cx| {
+                    cx.set(Some(bt))
+                });
             }
             output
         }

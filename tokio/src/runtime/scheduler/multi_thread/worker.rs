@@ -502,8 +502,16 @@ fn run(worker: Arc<Worker>) {
             defer: Defer::new(),
         });
 
-        #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
-        tracing::trace!(name: "worker start", tokio_runtime_event = "start", target = "flihgt_recorder");
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
+        tracing::trace!(
+            tokio_runtime_event = "worker start",
+            target = "flihgt_recorder"
+        );
 
         context::set_scheduler(&cx, || {
             let cx = cx.expect_multi_thread();
@@ -595,7 +603,12 @@ impl Context {
 
         // Run the task
         coop::budget(|| {
-            #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
             {
                 let span = tracing::span!(
                     tracing::Level::TRACE,
@@ -614,9 +627,15 @@ impl Context {
                     .flatten()
                     .unwrap_or_default();
 
-                span.record("stacktrace", bt);
+                span.record("stacktrace", &bt.as_str());
             }
-            #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
             {
                 task.run();
             }
@@ -684,7 +703,12 @@ impl Context {
                 *self.core.borrow_mut() = Some(core);
                 let task = self.worker.handle.shared.owned.assert_owner(task);
 
-                #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+                #[cfg(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                ))]
                 {
                     let span = tracing::span!(
                         tracing::Level::TRACE,
@@ -703,10 +727,15 @@ impl Context {
                         .flatten()
                         .unwrap_or_default();
 
-                    span.record("stacktrace", bt);
+                    span.record("stacktrace", &bt.as_str());
                 }
 
-                #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+                #[cfg(not(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                )))]
                 {
                     task.run();
                 }
@@ -794,7 +823,12 @@ impl Context {
         // Store `core` in context
         *self.core.borrow_mut() = Some(core);
 
-        #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
         {
             let span = tracing::span!(tracing::Level::TRACE, "park", tokio_runtime_event = "park");
             let _enter = span.enter();
@@ -808,7 +842,12 @@ impl Context {
             drop(_enter);
             drop(span);
         }
-        #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+        #[cfg(not(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        )))]
         {
             // Park thread
             if let Some(timeout) = duration {
