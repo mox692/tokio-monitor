@@ -101,5 +101,5 @@ path = "dump.rs"
 name = "runtime-tracing"
 path = "runtime-tracing.rs"
 
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(tokio_unstable)'] }
+[lints]
+workspace = true
