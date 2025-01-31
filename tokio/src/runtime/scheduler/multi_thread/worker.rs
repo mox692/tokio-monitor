@@ -281,10 +281,7 @@ pub(super) fn create(
 
     let remotes_len = remotes.len();
     let handle = Arc::new(Handle {
-        task_hooks: TaskHooks {
-            task_spawn_callback: config.before_spawn.clone(),
-            task_terminate_callback: config.after_termination.clone(),
-        },
+        task_hooks: TaskHooks::from_config(&config),
         shared: Shared {
             remotes: remotes.into_boxed_slice(),
             inject,
@@ -584,6 +581,9 @@ impl Context {
     }
 
     fn run_task(&self, task: Notified, mut core: Box<Core>) -> RunResult {
+        #[cfg(tokio_unstable)]
+        let task_id = task.task_id();
+
         let task = self.worker.handle.shared.owned.assert_owner(task);
 
         // Make sure the worker is not in the **searching** state. This enables
@@ -603,6 +603,11 @@ impl Context {
 
         // Run the task
         coop::budget(|| {
+            // Unlike the poll time above, poll start callback is attached to the task id,
+            // so it is tightly associated with the actual poll invocation.
+            #[cfg(tokio_unstable)]
+            self.worker.handle.task_hooks.poll_start_callback(task_id);
+
             #[cfg(all(
                 tokio_unstable,
                 feature = "runtime-tracing",
@@ -613,7 +618,7 @@ impl Context {
                 let span = tracing::span!(
                     tracing::Level::TRACE,
                     "run_task",
-                    name = task.id().0,
+                    name = task.task_id().0.get(),
                     tokio_runtime_event = "run_task",
                     stacktrace = tracing::field::Empty
                 );
@@ -639,6 +644,9 @@ impl Context {
             {
                 task.run();
             }
+
+            #[cfg(tokio_unstable)]
+            self.worker.handle.task_hooks.poll_stop_callback(task_id);
 
             let mut lifo_polls = 0;
 
@@ -703,6 +711,12 @@ impl Context {
                 *self.core.borrow_mut() = Some(core);
                 let task = self.worker.handle.shared.owned.assert_owner(task);
 
+                #[cfg(tokio_unstable)]
+                let task_id = task.task_id();
+
+                #[cfg(tokio_unstable)]
+                self.worker.handle.task_hooks.poll_start_callback(task_id);
+
                 #[cfg(all(
                     tokio_unstable,
                     feature = "runtime-tracing",
@@ -728,6 +742,9 @@ impl Context {
                         .unwrap_or_default();
 
                     span.record("stacktrace", &bt.as_str());
+
+                    #[cfg(tokio_unstable)]
+                    self.worker.handle.task_hooks.poll_stop_callback(task_id);
                 }
 
                 #[cfg(not(all(
@@ -739,6 +756,9 @@ impl Context {
                 {
                     task.run();
                 }
+
+                #[cfg(tokio_unstable)]
+                self.worker.handle.task_hooks.poll_stop_callback(task_id);
             }
         })
     }
