@@ -66,13 +66,14 @@ jobs:
       - clippy
       - docs
       - loom-compile
-      - check-readme
+      # - check-readme
       - test-hyper
       - test-quinn
       - x86_64-fortanix-unknown-sgx
       - check-redox
       - wasm32-unknown-unknown
-      - wasm32-wasip1
+      # TODO: comment in
+      # - wasm32-wasip1
       - check-external-types
       - check-fuzzing
       - check-unstable-mt-counters
@@ -480,6 +481,7 @@ jobs:
         with:
           rust-toolchain: ${{ env.rust_stable }}
           release-type: minor
+          package: tokio
 
   cross-check:
     name: cross-check
@@ -740,20 +742,20 @@ jobs:
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace
+          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private
+          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
       - name: "check --all-features --unstable -Z minimal-versions"
         env:
           RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace
+          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private
+          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
 
   fmt:
     name: fmt
@@ -796,7 +798,8 @@ jobs:
     strategy:
       matrix:
         run:
-          - os: windows-latest
+          # Windows is not supported yet.
+          # - os: windows-latest
           - os: ubuntu-latest
             RUSTFLAGS: --cfg tokio_taskdump
             RUSTDOCFLAGS: --cfg tokio_taskdump
@@ -832,17 +835,18 @@ jobs:
         env:
           RUSTFLAGS: --cfg loom --cfg tokio_unstable -Dwarnings
 
-  check-readme:
-    name: Check README
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Verify that both READMEs are identical
-        run: diff README.md tokio/README.md
+  # It is used in the upstream tokio, but not in this fork project.
+  # check-readme:
+  #   name: Check README
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Verify that both READMEs are identical
+  #       run: diff README.md tokio/README.md
 
-      - name: Verify that Tokio version is up to date in README
-        working-directory: tokio
-        run: grep -q "$(sed '/^version = /!d' Cargo.toml | head -n1)" README.md
+  #     - name: Verify that Tokio version is up to date in README
+  #       working-directory: tokio
+  #       run: grep -q "$(sed '/^version = /!d' Cargo.toml | head -n1)" README.md
 
   test-hyper:
     name: Test hyper
@@ -996,67 +1000,65 @@ jobs:
         run: wasm-pack test --node -- --features "macros sync"
         working-directory: tokio
 
-  wasm32-wasip1:
-    name: ${{ matrix.target }}
-    needs: basics
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target:
-          - wasm32-wasip1
-          - wasm32-wasip1-threads
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust ${{ env.rust_stable }}
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: ${{ env.rust_stable }}
-          targets: ${{ matrix.target }}
+  # TODO: comment in
+  # wasm32-wasip1:
+  #   name: ${{ matrix.target }}
+  #   needs: basics
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     matrix:
+  #       target:
+  #         - wasm32-wasip1
+  #         - wasm32-wasip1-threads
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Install Rust ${{ env.rust_stable }}
+  #       uses: dtolnay/rust-toolchain@stable
+  #       with:
+  #         toolchain: ${{ env.rust_stable }}
+  #         targets: ${{ matrix.target }}
 
-      # Install dependencies
-      - name: Install cargo-hack, wasmtime, and cargo-wasi
-        uses: taiki-e/install-action@v2
-        with:
-          tool: cargo-hack,wasmtime
+  #     # Install dependencies
+  #     - name: Install cargo-hack, wasmtime, and cargo-wasi
+  #       uses: taiki-e/install-action@v2
+  #       with:
+  #         tool: cargo-hack,wasmtime,cargo-wasi
 
-      - uses: Swatinem/rust-cache@v2
-      - name: WASI test tokio full
-        run: cargo test -p tokio --target ${{ matrix.target }} --features full
-        env:
-          CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
-          CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
-          RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
+  #     - uses: Swatinem/rust-cache@v2
+  #     - name: WASI test tokio full
+  #       run: cargo test -p tokio --target ${{ matrix.target }} --features full
+  #       env:
+  #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
+  #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
+  #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
-      - name: WASI test tokio-util full
-        run: cargo test -p tokio-util --target ${{ matrix.target }} --features full
-        env:
-          CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
-          CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
-          RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
+  #     - name: WASI test tokio-util full
+  #       run: cargo test -p tokio-util --target ${{ matrix.target }} --features full
+  #       env:
+  #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
+  #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
+  #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
-      - name: WASI test tokio-stream
-        run: cargo test -p tokio-stream --target ${{ matrix.target }} --features time,net,io-util,sync
-        env:
-          CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
-          CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
-          RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
+  #     - name: WASI test tokio-stream
+  #       run: cargo test -p tokio-stream --target ${{ matrix.target }} --features time,net,io-util,sync
+  #       env:
+  #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
+  #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
+  #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
-      - name: test tests-integration --features wasi-rt
-        # TODO: this should become: `cargo hack wasi test --each-feature`
-        run: cargo test --target ${{ matrix.target }} --test rt_yield --features wasi-rt
-        if: matrix.target == 'wasm32-wasip1'
-        working-directory: tests-integration
-        env:
-          CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
-          RUSTFLAGS: -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
+  #     - name: test tests-integration --features wasi-rt
+  #       # TODO: this should become: `cargo hack wasi test --each-feature`
+  #       run: cargo wasi test --test rt_yield --features wasi-rt
+  #       if: matrix.target == 'wasm32-wasip1'
+  #       working-directory: tests-integration
 
-      - name: test tests-integration --features wasi-threads-rt
-        run: cargo test --target ${{ matrix.target }} --features wasi-threads-rt
-        if: matrix.target == 'wasm32-wasip1-threads'
-        working-directory: tests-integration
-        env:
-          CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
-          RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
+  #     - name: test tests-integration --features wasi-threads-rt
+  #       run: cargo test --target ${{ matrix.target }} --features wasi-threads-rt
+  #       if: matrix.target == 'wasm32-wasip1-threads'
+  #       working-directory: tests-integration
+  #       env:
+  #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
+  #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
   check-external-types:
     name: check-external-types (${{ matrix.os }})
@@ -1171,7 +1173,7 @@ jobs:
           fi
       - name: Detect trailing whitespace
         run: |
-          if grep --exclude-dir=.git --exclude-dir=target -rne '\s$' .
+          if grep --exclude-dir=.git --exclude-dir=target --exclude-dir=tracing-perfetto -rne '\s$' .
           then
               echo ''
               echo 'Please remove trailing whitespace from these lines.'

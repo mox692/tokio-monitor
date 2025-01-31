@@ -52,6 +52,16 @@ cfg_io_util! {
 
 impl AsyncWrite for Sink {
     #[inline]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -63,6 +73,16 @@ impl AsyncWrite for Sink {
     }
 
     #[inline]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         ready!(crate::trace::trace_leaf(cx));
         ready!(poll_proceed_and_make_progress(cx));
@@ -70,6 +90,16 @@ impl AsyncWrite for Sink {
     }
 
     #[inline]
+    #[cfg_attr(
+        all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            feature = "macros",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ),
+        crate::trace_on_pending_backtrace
+    )]
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<(), io::Error>> {
         ready!(crate::trace::trace_leaf(cx));
         ready!(poll_proceed_and_make_progress(cx));

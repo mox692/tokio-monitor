@@ -72,6 +72,15 @@ struct Context {
         any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64")
     ))]
     trace: trace::Context,
+
+    #[allow(unused)]
+    #[cfg(all(
+        tokio_unstable,
+        feature = "runtime-tracing",
+        target_os = "linux",
+        target_arch = "x86_64"
+    ))]
+    backtrace: Cell<Option<String>>,
 }
 
 tokio_thread_local! {
@@ -117,6 +126,14 @@ tokio_thread_local! {
                 )
             ))]
             trace: trace::Context::new(),
+
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
+            backtrace: Cell::new(None)
         }
     }
 }
@@ -201,4 +218,12 @@ cfg_rt! {
             CONTEXT.try_with(|c| f(&c.trace)).ok()
         }
     }
+
+    cfg_runtime_tracing! {
+        #[allow(unused)]
+        pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
+            CONTEXT.try_with(|c| f(&c.backtrace)).ok()
+        }
+    }
+
 }

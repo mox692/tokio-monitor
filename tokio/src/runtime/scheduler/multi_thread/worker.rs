@@ -69,7 +69,6 @@ use crate::runtime::{
 use crate::runtime::{context, TaskHooks};
 use crate::util::atomic_cell::AtomicCell;
 use crate::util::rand::{FastRand, RngSeedGenerator};
-
 use std::cell::RefCell;
 use std::task::Waker;
 use std::thread;
@@ -500,6 +499,17 @@ fn run(worker: Arc<Worker>) {
             defer: Defer::new(),
         });
 
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
+        tracing::trace!(
+            tokio_runtime_event = "worker start",
+            target = "flihgt_recorder"
+        );
+
         context::set_scheduler(&cx, || {
             let cx = cx.expect_multi_thread();
 
@@ -598,7 +608,42 @@ impl Context {
             #[cfg(tokio_unstable)]
             self.worker.handle.task_hooks.poll_start_callback(task_id);
 
-            task.run();
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
+            {
+                let span = tracing::span!(
+                    tracing::Level::TRACE,
+                    "run_task",
+                    name = task_id,
+                    tokio_runtime_event = "run_task",
+                    stacktrace = tracing::field::Empty
+                );
+                let _enter = span.enter();
+
+                task.run();
+
+                drop(_enter);
+
+                let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
+                    .flatten()
+                    .unwrap_or_default();
+
+                span.record("stacktrace", &bt.as_str());
+            }
+
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
+            {
+                task.run();
+            }
 
             #[cfg(tokio_unstable)]
             self.worker.handle.task_hooks.poll_stop_callback(task_id);
@@ -672,7 +717,45 @@ impl Context {
                 #[cfg(tokio_unstable)]
                 self.worker.handle.task_hooks.poll_start_callback(task_id);
 
-                task.run();
+                #[cfg(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                ))]
+                {
+                    let span = tracing::span!(
+                        tracing::Level::TRACE,
+                        "run_task",
+                        name = task.id().0,
+                        tokio_runtime_event = "run_task",
+                        stacktrace = tracing::field::Empty
+                    );
+                    let _enter = span.enter();
+
+                    task.run();
+
+                    drop(_enter);
+
+                    let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
+                        .flatten()
+                        .unwrap_or_default();
+
+                    span.record("stacktrace", &bt.as_str());
+
+                    #[cfg(tokio_unstable)]
+                    self.worker.handle.task_hooks.poll_stop_callback(task_id);
+                }
+
+                #[cfg(not(all(
+                    tokio_unstable,
+                    feature = "runtime-tracing",
+                    target_os = "linux",
+                    target_arch = "x86_64"
+                )))]
+                {
+                    task.run();
+                }
 
                 #[cfg(tokio_unstable)]
                 self.worker.handle.task_hooks.poll_stop_callback(task_id);
@@ -760,11 +843,38 @@ impl Context {
         // Store `core` in context
         *self.core.borrow_mut() = Some(core);
 
-        // Park thread
-        if let Some(timeout) = duration {
-            park.park_timeout(&self.worker.handle.driver, timeout);
-        } else {
-            park.park(&self.worker.handle.driver);
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
+        {
+            let span = tracing::span!(tracing::Level::TRACE, "park", tokio_runtime_event = "park");
+            let _enter = span.enter();
+
+            // Park thread
+            if let Some(timeout) = duration {
+                park.park_timeout(&self.worker.handle.driver, timeout);
+            } else {
+                park.park(&self.worker.handle.driver);
+            }
+            drop(_enter);
+            drop(span);
+        }
+        #[cfg(not(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        )))]
+        {
+            // Park thread
+            if let Some(timeout) = duration {
+                park.park_timeout(&self.worker.handle.driver, timeout);
+            } else {
+                park.park(&self.worker.handle.driver);
+            }
         }
 
         self.defer.wake();
