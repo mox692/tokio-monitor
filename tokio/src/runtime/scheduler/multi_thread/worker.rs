@@ -618,7 +618,7 @@ impl Context {
                 let span = tracing::span!(
                     tracing::Level::TRACE,
                     "run_task",
-                    name = task_id,
+                    name = task.task_id().0.get(),
                     tokio_runtime_event = "run_task",
                     stacktrace = tracing::field::Empty
                 );
