@@ -16,7 +16,7 @@ Tracing layer for recording spans and events as perfetto event format.
 """
 
 [features]
-# symbolize = ["clap", "hopframe"]
+symbolize = ["addr2line", "gimli", "memmap2", "object"]
 default = []
 
 [dependencies]
@@ -29,13 +29,20 @@ thread-id = "4.2.1"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 
+
 # optional deps
 # clap = { version = "4.5", optional = true, features = ["derive"] }
 tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # hopframe = { path = "../hopframe", optional = true, features = ["symbolize"] }
-# procfs = "0.16"
+procfs = "0.16"
+
+addr2line = { version = "0.24", optional = true }
+gimli = { version = "0.31", optional = true }
+memmap2 = { version = "0.9.4", optional = true }
+object = { version = "0.36.0", default-features = false, features = ["read", "compression"], optional = true }
+
 
 [build-dependencies]
 prost-build = "0.12"
@@ -48,7 +55,7 @@ tracing-subscriber = "0.3"
 tracing = "0.1"
 anyhow = "1"
 
-#[[bin]]
-#name = "perfetto_symbolize"
-#path = "src/perfetto_symbolize.rs"
-#required-features = ["symbolize"]
+[[bin]]
+name = "perfetto_symbolize"
+path = "src/perfetto_symbolize.rs"
+required-features = ["symbolize"]
