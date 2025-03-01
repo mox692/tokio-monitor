@@ -378,7 +378,7 @@ impl Builder {
         /// docs
         pub fn enable_flight_recorder(
             &mut self,
-            flight_recorder_config: FlihgtRecorderConfig,
+            _flight_recorder_config: super::flight_recorder::FlightRecorderConfig
         ) -> &mut Self {
             self
         }
