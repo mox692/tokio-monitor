@@ -1,7 +1,9 @@
 /// docs
+#[derive(Debug)]
 pub struct FlightRecorderConfig {}
 
 /// docs
+#[derive(Debug)]
 pub struct FlightRecorderHandle {}
 
 impl FlightRecorderHandle {
