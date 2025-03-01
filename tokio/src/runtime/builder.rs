@@ -374,6 +374,16 @@ impl Builder {
         self
     }
 
+    cfg_runtime_tracing! {
+        /// docs
+        pub fn enable_flight_recorder(
+            &mut self,
+            flight_recorder_config: FlihgtRecorderConfig,
+        ) -> &mut Self {
+            self
+        }
+    }
+
     /// Sets the number of worker threads the `Runtime` will use.
     ///
     /// This can be any number above 0 though it is advised to keep this value

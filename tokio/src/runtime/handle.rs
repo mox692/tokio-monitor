@@ -24,6 +24,10 @@ use std::future::Future;
 use std::marker::PhantomData;
 use std::{error, fmt, mem};
 
+cfg_runtime_tracing! {
+    use super::flight_recorder::FlightRecorderHandle;
+}
+
 /// Runtime context guard.
 ///
 /// Returned by [`Runtime::enter`] and [`Handle::enter`], the context guard exits
@@ -440,6 +444,13 @@ impl Handle {
     /// is performing.
     pub fn metrics(&self) -> RuntimeMetrics {
         RuntimeMetrics::new(self.clone())
+    }
+
+    cfg_runtime_tracing! {
+        /// docs
+        pub fn flight_recorder_handle(&self) -> FlightRecorderHandle {
+            FlightRecorderHandle {}
+        }
     }
 }
 
