@@ -23,6 +23,7 @@ default = []
 bytes = "1.6.0"
 prost = "=0.13.2"
 # Not used, for prost dep.
+prost-derive = "=0.13.2"
 anyhow = "1.0.96"
 rand = "0.8.5"
 thread-id = "4.2.1"
