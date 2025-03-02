@@ -320,7 +320,7 @@ where
             Some(idl::track_event::Type::SliceBegin),
         );
         packet.data = Some(idl::trace_packet::Data::TrackEvent(event));
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.trusted_pid = Some(self.pid);
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
@@ -400,7 +400,7 @@ where
         let mut packet = idl::TracePacket::default();
         packet.data = Some(idl::trace_packet::Data::TrackEvent(track_event));
         packet.trusted_pid = Some(self.pid);
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
                 self.sequence_id.get() as _,
@@ -512,7 +512,7 @@ where
             }
         });
         packet.data = Some(idl::trace_packet::Data::TrackEvent(event));
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.trusted_pid = Some(self.pid);
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
@@ -735,6 +735,17 @@ pub fn read_aslr_offset() -> crate::error::Result<u64> {
     //     .map_err(|e| crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e)))
 
     Ok(0)
+}
+
+fn get_current_time_nano() -> Option<u64> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    let now = SystemTime::now();
+    let nano = now
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards")
+        .as_nanos() as u64;
+
+    Some(nano)
 }
 
 #[cfg(not(target_os = "linux"))]

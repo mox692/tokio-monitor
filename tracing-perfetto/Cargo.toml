@@ -21,7 +21,6 @@ default = []
 
 [dependencies]
 bytes = "1.6.0"
-chrono = "0.4.38"
 prost = "0.12"
 rand = "0.8.5"
 thread-id = "4.2.1"
@@ -42,7 +41,6 @@ protobuf-src = "2.0.1"
 [dev-dependencies]
 tracing-subscriber = "0.3"
 tracing = "0.1"
-anyhow = "1"
 
 #[[bin]]
 #name = "perfetto_symbolize"
