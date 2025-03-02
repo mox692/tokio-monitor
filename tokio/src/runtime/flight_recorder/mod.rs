@@ -41,18 +41,4 @@ impl FlightRecorder for PerfettoFlightRecorder {
     }
 }
 
-// fastrace impl
-
-#[derive(Debug)]
-pub(crate) struct FastraceFlightRecorder {}
-
-impl FlightRecorder for FastraceFlightRecorder {
-    /// start flight recorder
-    fn start(&mut self) {}
-
-    /// stop flight recorder
-    fn stop(&mut self) {}
-
-    /// flush current buffer to the specific
-    fn flush_trace(&mut self) {}
-}
+// fastrace impl (TODO)
