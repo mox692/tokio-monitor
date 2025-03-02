@@ -108,7 +108,6 @@ impl TokioPerfettoLayerHandle {
         }
     }
 
-    /// docs
     pub fn stop(&self) {
         set_trace_enable(super::super::SUSPENDED)
     }
