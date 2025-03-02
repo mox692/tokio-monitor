@@ -345,11 +345,6 @@ cfg_signal_internal_and_unix! {
     pub(crate) mod signal;
 }
 
-cfg_runtime_tracing! {
-    mod flight_recorder;
-    pub use flight_recorder::{FlightRecorderConfig, FlightRecorderHandle};
-}
-
 cfg_rt! {
     pub(crate) mod task;
 
@@ -368,6 +363,10 @@ cfg_rt! {
         pub(crate) use blocking::spawn_mandatory_blocking;
     }
 
+    cfg_runtime_tracing! {
+        mod flight_recorder;
+        pub use flight_recorder::{FlightRecorderConfig, PerfettoFlightRecorder, FlightRecorder};
+    }
     mod builder;
     pub use self::builder::Builder;
     cfg_unstable! {
