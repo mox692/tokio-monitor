@@ -8,7 +8,7 @@ use bytes::BytesMut;
 use idl::InternedData;
 use prost::Message;
 use std::io::Write;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use tracing::field::Field;
 use tracing::field::Visit;
 use tracing::span;
@@ -46,6 +46,20 @@ thread_local! {
 
 // This is thread safe, since duplicated descriptor will be combined into one by perfetto.
 static PROCESS_DESCRIPTOR_SENT: AtomicBool = AtomicBool::new(false);
+
+pub(crate) const INITIALIZE: usize = 0;
+pub(crate) const RUNNING: usize = 1;
+pub(crate) const SUSPENDED: usize = 2;
+
+static TRACE_ENABLED: AtomicUsize = AtomicUsize::new(INITIALIZE);
+
+pub fn set_trace_enable(state: usize) {
+    TRACE_ENABLED.store(state, Ordering::Relaxed)
+}
+
+pub fn get_trace_enable() -> usize {
+    TRACE_ENABLED.load(Ordering::Relaxed)
+}
 
 /// A `Layer` that records span as perfetto's
 /// `TYPE_SLICE_BEGIN`/`TYPE_SLICE_END`, and event as `TYPE_INSTANT`.
@@ -91,6 +105,14 @@ impl<W: PerfettoWriter> PerfettoLayer<W> {
             pid: std::process::id() as i32,
             aslr_offset: read_aslr_offset().ok(),
         }
+    }
+
+    pub fn start(&mut self) {
+        set_trace_enable(RUNNING);
+    }
+
+    pub fn stop(&mut self) {
+        set_trace_enable(SUSPENDED);
     }
 
     /// Configures whether or not spans/events should be recorded with their metadata and fields.
@@ -257,17 +279,22 @@ where
 
         let name = &mut None;
         let is_runtask = &mut false;
-        let enabled = self
-            .config
-            .filter
-            .map(|f| {
-                let mut visitor = PerfettoVisitor::new(f);
-                attrs.record(&mut visitor);
-                *name = visitor.name;
-                *is_runtask = visitor.is_runtask;
-                visitor.perfetto
-            })
-            .unwrap_or(true);
+        let enabled = {
+            let not_filtered = self
+                .config
+                .filter
+                .map(|f| {
+                    let mut visitor = PerfettoVisitor::new(f);
+                    attrs.record(&mut visitor);
+                    *name = visitor.name;
+                    *is_runtask = visitor.is_runtask;
+                    visitor.perfetto
+                })
+                .unwrap_or(true);
+            let enabled = get_trace_enable() == RUNNING;
+
+            enabled && not_filtered
+        };
 
         if !enabled {
             return;
@@ -292,7 +319,7 @@ where
             Some(idl::track_event::Type::SliceBegin),
         );
         packet.data = Some(idl::trace_packet::Data::TrackEvent(event));
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.trusted_pid = Some(self.pid);
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
@@ -324,17 +351,22 @@ where
     fn on_event(&self, event: &Event<'_>, ctx: Context<'_, S>) {
         let name = &mut None;
         let is_runtask = &mut false;
-        let enabled = self
-            .config
-            .filter
-            .map(|f| {
-                let mut visitor = PerfettoVisitor::new(f);
-                event.record(&mut visitor);
-                *name = visitor.name;
-                *is_runtask = visitor.is_runtask;
-                visitor.perfetto
-            })
-            .unwrap_or_default();
+        let enabled = {
+            let not_filtered = self
+                .config
+                .filter
+                .map(|f| {
+                    let mut visitor = PerfettoVisitor::new(f);
+                    event.record(&mut visitor);
+                    *name = visitor.name;
+                    *is_runtask = visitor.is_runtask;
+                    visitor.perfetto
+                })
+                .unwrap_or_default();
+            let enabled = get_trace_enable() == RUNNING;
+
+            not_filtered && enabled
+        };
 
         if !enabled {
             return;
@@ -367,7 +399,7 @@ where
         let mut packet = idl::TracePacket::default();
         packet.data = Some(idl::trace_packet::Data::TrackEvent(track_event));
         packet.trusted_pid = Some(self.pid);
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
                 self.sequence_id.get() as _,
@@ -479,7 +511,7 @@ where
             }
         });
         packet.data = Some(idl::trace_packet::Data::TrackEvent(event));
-        packet.timestamp = chrono::Local::now().timestamp_nanos_opt().map(|t| t as _);
+        packet.timestamp = get_current_time_nano();
         packet.trusted_pid = Some(self.pid);
         packet.optional_trusted_packet_sequence_id = Some(
             idl::trace_packet::OptionalTrustedPacketSequenceId::TrustedPacketSequenceId(
@@ -506,6 +538,10 @@ where
         trace.packet.push(packet);
 
         self.write_log(trace);
+    }
+
+    fn enabled(&self, _metadata: &tracing::Metadata<'_>, _ctx: Context<'_, S>) -> bool {
+        get_trace_enable() == RUNNING
     }
 }
 
@@ -698,6 +734,15 @@ pub fn read_aslr_offset() -> crate::error::Result<u64> {
     //     .map_err(|e| crate::error::TracingPerfettoError::new("TracingPerfettoError:", Box::new(e)))
 
     Ok(0)
+}
+
+fn get_current_time_nano() -> Option<u64> {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .ok()
+        .map(|d| d.as_nanos() as u64)
 }
 
 #[cfg(not(target_os = "linux"))]

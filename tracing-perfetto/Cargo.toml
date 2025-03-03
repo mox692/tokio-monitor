@@ -20,33 +20,36 @@ Tracing layer for recording spans and events as perfetto event format.
 default = []
 
 [dependencies]
-anyhow = "1.0.86"
 bytes = "1.6.0"
-chrono = "0.4.38"
-prost = "0.12"
+
+# we need to fix the version to match our msrv
+prost = "=0.13.2"
+prost-derive = "=0.13.2"
+
+# Not used, for prost dep.
+anyhow = "1.0.96"
 rand = "0.8.5"
 thread-id = "4.2.1"
-tracing = "0.1"
+tracing = "0.1.41"
 tracing-subscriber = "0.3"
 
-# optional deps
-# clap = { version = "4.5", optional = true, features = ["derive"] }
-tokio = { version = "1", features = [ "macros", "rt-multi-thread" ] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 # hopframe = { path = "../hopframe", optional = true, features = ["symbolize"] }
 # procfs = "0.16"
 
 [build-dependencies]
-prost-build = "0.12"
-protobuf = "=3.1"
+# we need to fix the version to match our msrv
+prost-build = "=0.13.2"
+
+# protobuf compilation issue
+protobuf = "=3.2.0"
 [target.'cfg(not(target_os = "windows"))'.build-dependencies]
-protobuf-src = "2.0.1"
+protobuf-src = "2.1"
 
 [dev-dependencies]
 tracing-subscriber = "0.3"
 tracing = "0.1"
-anyhow = "1"
 
 #[[bin]]
 #name = "perfetto_symbolize"
