@@ -47,7 +47,6 @@ thread_local! {
 // This is thread safe, since duplicated descriptor will be combined into one by perfetto.
 static PROCESS_DESCRIPTOR_SENT: AtomicBool = AtomicBool::new(false);
 
-// This is thread safe, since duplicated descriptor will be combined into one by perfetto.
 pub(crate) const INITIALIZE: usize = 0;
 pub(crate) const RUNNING: usize = 1;
 pub(crate) const SUSPENDED: usize = 2;
@@ -739,13 +738,11 @@ pub fn read_aslr_offset() -> crate::error::Result<u64> {
 
 fn get_current_time_nano() -> Option<u64> {
     use std::time::{SystemTime, UNIX_EPOCH};
-    let now = SystemTime::now();
-    let nano = now
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards")
-        .as_nanos() as u64;
 
-    Some(nano)
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .ok()
+        .map(|d| d.as_nanos() as u64)
 }
 
 #[cfg(not(target_os = "linux"))]

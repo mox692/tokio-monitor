@@ -449,7 +449,7 @@ impl Handle {
     }
 
     cfg_runtime_tracing! {
-        /// docs
+        /// Return a handle to the `FlightRecorder`.
         pub fn flight_recorder_handle(&self) -> impl FlightRecorder {
             PerfettoFlightRecorder {
                 inner: TokioPerfettoLayerHandle {}
