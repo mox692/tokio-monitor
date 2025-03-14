@@ -8,8 +8,6 @@ use fastrace::collector::TestReporter;
 use fastrace::local::LocalCollector;
 use fastrace::prelude::*;
 use fastrace::util::tree::tree_str_from_span_records;
-use serial_test::serial;
-use tokio::runtime::Builder;
 
 fn four_spans() {
     {
@@ -36,7 +34,6 @@ fn four_spans() {
 }
 
 #[test]
-#[serial]
 fn single_thread_single_span() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -64,7 +61,6 @@ root []
 }
 
 #[test]
-#[serial]
 fn single_thread_multiple_spans() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -144,7 +140,6 @@ root3 []
 }
 
 #[test]
-#[serial]
 fn multiple_spans_without_local_spans() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -193,7 +188,6 @@ fn multiple_spans_without_local_spans() {
 }
 
 #[test]
-#[serial]
 fn multiple_local_parent() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -226,7 +220,6 @@ root []
 }
 
 #[test]
-#[serial]
 fn early_local_collect() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -256,7 +249,6 @@ root []
 }
 
 #[test]
-#[serial]
 fn max_spans_per_trace() {
     #[trace(short_name = true)]
     fn recursive(n: usize) {
@@ -307,7 +299,6 @@ root []
 }
 
 #[test]
-#[serial]
 fn test_elapsed() {
     fastrace::set_reporter(ConsoleReporter, Config::default());
 
@@ -323,7 +314,6 @@ fn test_elapsed() {
 }
 
 #[test]
-#[serial]
 fn test_add_property() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
@@ -351,7 +341,6 @@ root [("k1", "v1"), ("k2", "v2")]
 }
 
 #[test]
-#[serial]
 fn test_not_sampled() {
     let (reporter, collected_spans) = TestReporter::new();
     fastrace::set_reporter(reporter, Config::default());
