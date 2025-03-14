@@ -15,10 +15,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 pub use console_reporter::ConsoleReporter;
-#[cfg(not(test))]
 pub(crate) use global_collector::GlobalCollect;
-#[cfg(test)]
-pub(crate) use global_collector::MockGlobalCollect;
 pub use global_collector::Reporter;
 pub use id::SpanContext;
 pub use id::SpanId;
@@ -28,9 +25,6 @@ pub use test_reporter::TestReporter;
 
 use crate::local::local_collector::LocalSpansInner;
 use crate::local::raw_span::RawSpan;
-
-#[cfg(test)]
-pub(crate) type GlobalCollect = Arc<MockGlobalCollect>;
 
 #[doc(hidden)]
 #[derive(Debug)]
