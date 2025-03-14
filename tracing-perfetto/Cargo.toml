@@ -44,7 +44,6 @@ prost-build = "=0.13.2"
 
 # protobuf compilation issue
 [target.'cfg(not(target_os = "windows"))'.build-dependencies]
-protobuf = "3.7.2"
 protobuf-src = "2.1"
 
 [dev-dependencies]
