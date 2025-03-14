@@ -31,10 +31,7 @@ criterion = { version = "0.5", features = ["html_reports"] }
 fastant = "0.1"
 flume = "0.11"
 futures-timer = "3"
-logcall = "0.1"
 logforth = { version = "0.19.2", features = ["fastrace"] }
-mockall = "0.13"
-pollster = { version = "0.4.0" }
 rand = "0.9"
 rustracing = "0.6"
 serial_test = "3.1"

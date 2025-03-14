@@ -127,7 +127,6 @@ pub trait Reporter: Send + 'static {
 #[derive(Default, Clone)]
 pub(crate) struct GlobalCollect;
 
-#[cfg_attr(test, mockall::automock)]
 impl GlobalCollect {
     pub fn start_collect(&self) -> usize {
         let collect_id = NEXT_COLLECT_ID.fetch_add(1, Ordering::Relaxed);
