@@ -567,7 +567,7 @@ impl Drop for LocalParentGuard {
 
 #[cfg(test)]
 thread_local! {
-    static MOCK_COLLECT: RefCell<GlobalCollect> = RefCell::new(GlobalCollect::default());
+    static MOCK_COLLECT: RefCell<GlobalCollect> = RefCell::new(GlobalCollect);
 }
 
 #[cfg(test)]
