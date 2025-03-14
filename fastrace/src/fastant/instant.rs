@@ -248,7 +248,8 @@ impl Anchor {
 
 #[allow(dead_code)]
 #[cfg(all(feature = "atomic", target_has_atomic = "64"))]
-mod atomic {
+#[cfg_attr(docsrs, doc(cfg(all(feature = "atomic", target_has_atomic = "64"))))]
+pub(crate) mod atomic {
     use std::sync::atomic::AtomicU64;
     use std::sync::atomic::Ordering;
 
@@ -260,94 +261,36 @@ mod atomic {
     pub struct Atomic(AtomicU64);
 
     impl Atomic {
-        /// Maximum with the current value.
-        ///
-        /// Finds the maximum of the current value and the argument `val`, and
-        /// sets the new value to the result.
-        ///
-        /// Returns the previous value.
-        ///
-        /// `fetch_max` takes an [`Ordering`] argument which describes the memory ordering
-        /// of this operation. All ordering modes are possible. Note that using
-        /// [`Acquire`] makes the store part of this operation [`Relaxed`], and
-        /// using [`Release`] makes the load part [`Relaxed`].
-        ///
-        /// **Note**: This method is only available on platforms that support atomic operations on
-        /// `[u64]`.
         #[inline]
         pub fn fetch_max(&self, val: Instant, order: Ordering) -> Instant {
             Instant(self.0.fetch_max(val.0, order))
         }
 
-        /// Minimum with the current value.
-        ///
-        /// Finds the minimum of the current value and the argument `val`, and
-        /// sets the new value to the result.
-        ///
-        /// Returns the previous value.
-        ///
-        /// `fetch_min` takes an [`Ordering`] argument which describes the memory ordering
-        /// of this operation. All ordering modes are possible. Note that using
-        /// [`Acquire`] makes the store part of this operation [`Relaxed`], and
-        /// using [`Release`] makes the load part [`Relaxed`].
-        ///
-        /// **Note**: This method is only available on platforms that support atomic operations on
-        /// `[u64]`.
         #[inline]
         pub fn fetch_min(&self, val: Instant, order: Ordering) -> Instant {
             Instant(self.0.fetch_min(val.0, order))
         }
 
-        /// Consumes the atomic and returns the contained [`Instant`].
-        ///
-        /// This is safe because passing `self` by value guarantees that no other threads are
-        /// concurrently accessing the atomic data.
         #[inline]
         pub fn into_instant(self) -> Instant {
             Instant(self.0.into_inner())
         }
 
-        /// Loads a value from the [`Atomic`].
-        ///
-        /// `load` takes an [`Ordering`] argument which describes the memory ordering of this
-        /// operation. Possible values are [`SeqCst`], [`Acquire`] and [`Relaxed`].
-        ///
-        /// # Panics
-        ///
-        /// Panics if `order` is [`Release`] or [`AcqRel`].
         #[inline]
         pub fn load(&self, order: Ordering) -> Instant {
             Instant(self.0.load(order))
         }
 
-        /// Creates a new [`Atomic`].
         #[inline]
         pub fn new(v: Instant) -> Self {
             Self(AtomicU64::new(v.0))
         }
 
-        /// Stores a value into the [`Atomic`].
-        ///
-        /// `store` takes an [`Ordering`] argument which describes the memory ordering of this
-        /// operation.  Possible values are [`SeqCst`], [`Release`] and [`Relaxed`].
-        ///
-        /// # Panics
-        ///
-        /// Panics if `order` is [`Acquire`] or [`AcqRel`].
         #[inline]
         pub fn store(&self, val: Instant, order: Ordering) {
             self.0.store(val.0, order)
         }
 
-        /// Stores a value into the [`Atomic`], returning the previous value.
-        ///
-        /// `swap` takes an [`Ordering`] argument which describes the memory ordering
-        /// of this operation. All ordering modes are possible. Note that using
-        /// [`Acquire`] makes the store part of this operation [`Relaxed`], and
-        /// using [`Release`] makes the load part [`Relaxed`].
-        ///
-        /// **Note**: This method is only available on platforms that support atomic operations on
-        /// `u64`
         #[inline]
         pub fn swap(&self, val: Instant, order: Ordering) -> Instant {
             Instant(self.0.swap(val.0, order))
