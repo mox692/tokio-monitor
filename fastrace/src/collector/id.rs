@@ -45,23 +45,6 @@ impl FromStr for TraceId {
     }
 }
 
-#[cfg(feature = "serde")]
-impl serde::Serialize for TraceId {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&format!("{:032x}", self.0))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for TraceId {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        u128::from_str_radix(&s, 16)
-            .map(TraceId)
-            .map_err(serde::de::Error::custom)
-    }
-}
-
 /// An identifier for a span within a trace.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash, Default)]
 pub struct SpanId(pub u64);
@@ -108,23 +91,6 @@ impl FromStr for SpanId {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         u64::from_str_radix(s, 16).map(SpanId)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for SpanId {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&format!("{:016x}", self.0))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for SpanId {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let s = String::deserialize(deserializer)?;
-        u64::from_str_radix(&s, 16)
-            .map(SpanId)
-            .map_err(serde::de::Error::custom)
     }
 }
 
