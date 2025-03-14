@@ -385,7 +385,7 @@ pub use crate::collector::global_collector::flush;
 pub use crate::collector::global_collector::set_reporter;
 pub use crate::event::Event;
 pub use crate::span::Span;
-pub(crate) mod fastant;
+pub mod fastant;
 
 pub mod prelude {
     //! A "prelude" for crates using `fastrace`.

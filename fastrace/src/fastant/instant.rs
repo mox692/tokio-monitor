@@ -246,6 +246,7 @@ impl Anchor {
     }
 }
 
+#[allow(dead_code)]
 #[cfg(all(feature = "atomic", target_has_atomic = "64"))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "atomic", target_has_atomic = "64"))))]
 mod atomic {
@@ -361,10 +362,6 @@ mod atomic {
         }
     }
 }
-
-#[cfg(all(feature = "atomic", target_has_atomic = "64"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "atomic", target_has_atomic = "64"))))]
-pub use atomic::Atomic;
 
 use super::current_cycle;
 use super::nanos_per_cycle;
