@@ -575,11 +575,6 @@ fn current_collect() -> GlobalCollect {
     MOCK_COLLECT.with(|mock| mock.borrow().clone())
 }
 
-#[cfg(test)]
-fn set_mock_collect(collect: GlobalCollect) {
-    MOCK_COLLECT.with(|mock| *mock.borrow_mut() = collect);
-}
-
 #[cfg(not(test))]
 fn current_collect() -> GlobalCollect {
     GlobalCollect
