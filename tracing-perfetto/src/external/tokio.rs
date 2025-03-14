@@ -1,4 +1,4 @@
-use crate::PerfettoLayer;
+use crate::{get_trace_enable, set_trace_enable, PerfettoLayer};
 use std::path::PathBuf;
 use std::{fs::File, sync::Mutex};
 use tracing::{span, Subscriber};
@@ -38,6 +38,14 @@ where
     fn on_close(&self, id: span::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
         self.inner.on_close(id, ctx)
     }
+
+    fn enabled(
+        &self,
+        metadata: &tracing::Metadata<'_>,
+        ctx: tracing_subscriber::layer::Context<'_, S>,
+    ) -> bool {
+        self.inner.enabled(metadata, ctx)
+    }
 }
 
 // TODO: better impl
@@ -69,5 +77,38 @@ impl TokioPerfettoLayerBuilder {
         .with_debug_annotations(true);
 
         TokioPerfettoLayer { inner }
+    }
+}
+
+#[derive(Debug)]
+pub struct TokioPerfettoLayerHandle {}
+
+impl TokioPerfettoLayerHandle {
+    pub fn start(&self) {
+        use super::super::{INITIALIZE, RUNNING, SUSPENDED};
+        use tracing_subscriber::prelude::__tracing_subscriber_SubscriberExt;
+        use tracing_subscriber::util::SubscriberInitExt;
+        match get_trace_enable() {
+            INITIALIZE => {
+                let layer = TokioPerfettoLayerBuilder::new()
+                    .file_name("./test.pftrace")
+                    .build();
+
+                tracing_subscriber::registry().with(layer).init();
+
+                set_trace_enable(RUNNING);
+            }
+            RUNNING => {
+                // already enabled
+            }
+            SUSPENDED => {
+                set_trace_enable(super::super::RUNNING);
+            }
+            _ => panic!("Unexpected State"),
+        }
+    }
+
+    pub fn stop(&self) {
+        set_trace_enable(super::super::SUSPENDED)
     }
 }
