@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use fastant::Instant;
+use crate::fastant::Instant;
 
 use super::raw_span::RawKind;
 use crate::collector::SpanId;

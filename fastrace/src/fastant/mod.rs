@@ -35,6 +35,8 @@ mod instant;
 #[cfg(all(target_os = "linux", any(target_arch = "x86", target_arch = "x86_64")))]
 mod tsc_now;
 
+pub use instant::Anchor;
+
 pub use instant::Instant;
 
 /// Return `true` if the current platform supports Time Stamp Counter (TSC),
