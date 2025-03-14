@@ -351,7 +351,6 @@
 //! [`LocalSpan`]: crate::local::LocalSpan
 //! [`SpanRecord`]: crate::collector::SpanRecord
 //! [`FutureExt`]: crate::future::FutureExt
-//! [`trace`]: crate::trace
 //! [`LocalCollector`]: crate::local::LocalCollector
 //! [`Span::root()`]: crate::Span::root
 //! [`Span::noop()`]: crate::Span::noop
