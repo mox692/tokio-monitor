@@ -6,7 +6,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Duration;
 
-use fastant::Instant;
+use crate::fastant::Instant;
 
 use crate::collector::global_collector::reporter_ready;
 use crate::collector::global_collector::NOT_SAMPLED_COLLECT_ID;
@@ -567,7 +567,7 @@ impl Drop for LocalParentGuard {
 
 #[cfg(test)]
 thread_local! {
-    static MOCK_COLLECT: RefCell<GlobalCollect> = RefCell::new(GlobalCollect);
+    static MOCK_COLLECT: RefCell<GlobalCollect> = const { RefCell::new(GlobalCollect) };
 }
 
 #[cfg(test)]
