@@ -248,7 +248,6 @@ impl Anchor {
 
 #[allow(dead_code)]
 #[cfg(all(feature = "atomic", target_has_atomic = "64"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "atomic", target_has_atomic = "64"))))]
 mod atomic {
     use std::sync::atomic::AtomicU64;
     use std::sync::atomic::Ordering;
