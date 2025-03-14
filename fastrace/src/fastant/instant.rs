@@ -9,9 +9,6 @@ use std::time::Duration;
 use std::time::SystemTime;
 use std::time::UNIX_EPOCH;
 
-/// A measurement of a monotonically non-decreasing clock. Similar to
-/// [`std::time::Instant`](std::time::Instant) but is faster and more
-/// accurate if TSC is available.
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct Instant(u64);
@@ -130,36 +127,12 @@ impl Instant {
             .map(Instant)
     }
 
-    /// Returns `Some(t)` where `t` is the time `self - duration` if `t` can be represented as
-    /// `Instant` (which means it's inside the bounds of the underlying data structure), `None`
-    /// otherwise.
     pub fn checked_sub(&self, duration: Duration) -> Option<Instant> {
         self.0
             .checked_sub((duration.as_nanos() as u64 as f64 / nanos_per_cycle()) as u64)
             .map(Instant)
     }
 
-    /// Convert internal clocking counter into a UNIX timestamp represented as the
-    /// nanoseconds elapsed from [UNIX_EPOCH](UNIX_EPOCH).
-    ///
-    /// [`Anchor`](Anchor) contains the necessary calibration data for conversion.
-    /// Typically, initializing an [`Anchor`](Anchor) takes about 50 nanoseconds, so
-    /// try to reuse it for a batch of `Instant`.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use std::time::UNIX_EPOCH;
-    ///
-    /// use fastant::Anchor;
-    /// use fastant::Instant;
-    ///
-    /// let anchor = Anchor::new();
-    /// let instant = Instant::now();
-    ///
-    /// let expected = UNIX_EPOCH.elapsed().unwrap().as_nanos();
-    /// assert!((instant.as_unix_nanos(&anchor) as i64 - expected as i64).abs() < 1_000_000);
-    /// ```
     pub fn as_unix_nanos(&self, anchor: &Anchor) -> u64 {
         if self.0 > anchor.cycle {
             let forward_ns = ((self.0 - anchor.cycle) as f64 * nanos_per_cycle()) as u64;
