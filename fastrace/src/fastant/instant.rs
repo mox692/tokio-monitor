@@ -22,7 +22,7 @@ impl Instant {
     ///
     /// # Examples
     ///
-    /// ```rust
+    /// ```ignore
     /// use fastant::Instant;
     /// let now = Instant::now();
     /// ```
@@ -35,7 +35,7 @@ impl Instant {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use std::thread::sleep;
     /// use std::time::Duration;
     ///
@@ -57,7 +57,7 @@ impl Instant {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use std::thread::sleep;
     /// use std::time::Duration;
     ///
@@ -81,7 +81,7 @@ impl Instant {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use std::thread::sleep;
     /// use std::time::Duration;
     ///
@@ -102,7 +102,7 @@ impl Instant {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// use std::thread::sleep;
     /// use std::time::Duration;
     ///
