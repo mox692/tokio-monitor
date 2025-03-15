@@ -71,7 +71,7 @@ pub(crate) fn current_cycle() -> u64 {
     }
 }
 
-#[not(all(target_has_atomic = "64", feature = "fallback-coarse"))]
+#[cfg(not(all(target_has_atomic = "64", feature = "fallback-coarse")))]
 pub(crate) fn current_cycle_fallback() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
