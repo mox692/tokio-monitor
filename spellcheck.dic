@@ -1,4 +1,3 @@
-314
 &
 +
 <
@@ -9,9 +8,9 @@
 —
 0o777
 0s
+0x80000007
 0xA
 0xD
-0x80000007
 100ms
 100ns
 10ms
@@ -71,9 +70,9 @@ Config
 connectionless
 coroutines
 cpu
+CPUID
 cpus
 CPUs
-CPUID
 Customizable
 datagram
 Datagram
@@ -270,8 +269,8 @@ tokio
 Tokio
 tokio's
 Tokio's
-TSC
 tsc
+TSC
 TSCs
 tuple
 Tuple
