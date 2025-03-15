@@ -61,7 +61,7 @@ impl LocalSpanStack {
     }
 
     /// Register a new span line to the span stack. If succeed, return a span line epoch which can
-    /// be used to unregister the span line via [`LocalSpanStack::unregister_and_collect`]. If
+    /// be used to deregister the span line via [`LocalSpanStack::unregister_and_collect`]. If
     /// the size of the span stack is greater than the `capacity`, registration will fail
     /// and a `None` will be returned.
     ///

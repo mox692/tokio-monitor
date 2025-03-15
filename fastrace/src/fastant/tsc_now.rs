@@ -1,6 +1,6 @@
 // Copyright 2021 TiKV Project Authors. Licensed under Apache-2.0.
 
-//! This module will be compiled when it's either linux_x86 or linux_x86_64.
+//! This module will be compiled when it's either Linux x86 or Linux x86_64.
 
 use std::cell::UnsafeCell;
 use std::fs::read_to_string;
@@ -89,7 +89,7 @@ impl TSCLevel {
     }
 }
 
-/// If linux kernel detected TSCs are sync between CPUs, we can
+/// If Linux kernel detected TSCs are sync between CPUs, we can
 /// rely on the result to say tsc is stable so that no need to
 /// sync TSCs by ourselves.
 fn is_tsc_stable() -> bool {

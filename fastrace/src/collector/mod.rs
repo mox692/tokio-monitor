@@ -8,7 +8,6 @@ pub(crate) mod command;
 mod console_reporter;
 pub(crate) mod global_collector;
 pub(crate) mod id;
-mod test_reporter;
 
 use std::borrow::Cow;
 use std::sync::Arc;
@@ -20,8 +19,6 @@ pub use global_collector::Reporter;
 pub use id::SpanContext;
 pub use id::SpanId;
 pub use id::TraceId;
-#[doc(hidden)]
-pub use test_reporter::TestReporter;
 
 use crate::local::local_collector::LocalSpansInner;
 use crate::local::raw_span::RawSpan;

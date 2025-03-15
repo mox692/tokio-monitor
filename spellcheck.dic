@@ -11,6 +11,7 @@
 0s
 0xA
 0xD
+0x80000007
 100ms
 100ns
 10ms
@@ -71,6 +72,8 @@ connectionless
 coroutines
 cpu
 cpus
+CPUs
+CPUID
 Customizable
 datagram
 Datagram
@@ -267,6 +270,9 @@ tokio
 Tokio
 tokio's
 Tokio's
+TSC
+tsc
+TSCs
 tuple
 Tuple
 tx
@@ -296,10 +302,14 @@ vec
 versa
 versioned
 versioning
+VM
 vtable
+W3C
 waker
 wakers
 Wakers
 wakeup
 wakeups
 workstealing
+x86
+x86_64
