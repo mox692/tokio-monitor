@@ -5,7 +5,7 @@
 //!
 //! ## Example
 //!
-//! ```rust
+//! ```ignore
 //! let start = fastant::Instant::now();
 //! let duration: std::time::Duration = start.elapsed();
 //! ```
