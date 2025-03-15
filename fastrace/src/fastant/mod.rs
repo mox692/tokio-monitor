@@ -71,7 +71,7 @@ pub(crate) fn current_cycle() -> u64 {
     }
 }
 
-#[cfg(not(feature = "fallback-coarse"))]
+#[not(all(target_has_atomic = "64", feature = "fallback-coarse"))]
 pub(crate) fn current_cycle_fallback() -> u64 {
     std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
@@ -79,7 +79,7 @@ pub(crate) fn current_cycle_fallback() -> u64 {
         .unwrap_or(0)
 }
 
-#[cfg(feature = "fallback-coarse")]
+#[cfg(all(target_has_atomic = "64", feature = "fallback-coarse"))]
 pub(crate) fn current_cycle_fallback() -> u64 {
     let coarse = coarsetime::Instant::now_without_cache_update();
     coarsetime::Duration::from_ticks(coarse.as_ticks()).as_nanos()
