@@ -63,10 +63,9 @@ use crate::runtime::scheduler::multi_thread::{
 };
 use crate::runtime::scheduler::{inject, Defer, Lock};
 use crate::runtime::task::{OwnedTasks, TaskHarnessScheduleHooks};
-use crate::runtime::{
-    blocking, coop, driver, scheduler, task, Config, SchedulerMetrics, WorkerMetrics,
-};
+use crate::runtime::{blocking, driver, scheduler, task, Config, SchedulerMetrics, WorkerMetrics};
 use crate::runtime::{context, TaskHooks};
+use crate::task::coop;
 use crate::util::atomic_cell::AtomicCell;
 use crate::util::rand::{FastRand, RngSeedGenerator};
 use std::cell::RefCell;
@@ -893,7 +892,13 @@ impl Context {
     }
 
     pub(crate) fn defer(&self, waker: &Waker) {
-        self.defer.defer(waker);
+        if self.core.borrow().is_none() {
+            // If there is no core, then the worker is currently in a block_in_place. In this case,
+            // we cannot use the defer queue as we aren't really in the current runtime.
+            waker.wake_by_ref();
+        } else {
+            self.defer.defer(waker);
+        }
     }
 
     #[allow(dead_code)]
