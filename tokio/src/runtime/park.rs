@@ -295,7 +295,7 @@ impl CachedParkThread {
                     stacktrace = "stacktrace"
                 );
                 let run_span_enter = run_span.enter();
-                if let Ready(v) = crate::runtime::coop::budget(|| f.as_mut().poll(&mut cx)) {
+                if let Ready(v) = crate::task::coop::budget(|| f.as_mut().poll(&mut cx)) {
                     drop(run_span_enter);
                     return Ok(v);
                 }
@@ -303,7 +303,7 @@ impl CachedParkThread {
             }
             #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
             {
-                if let Ready(v) = crate::runtime::coop::budget(|| f.as_mut().poll(&mut cx)) {
+                if let Ready(v) = crate::task::coop::budget(|| f.as_mut().poll(&mut cx)) {
                     return Ok(v);
                 }
             }
