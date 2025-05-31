@@ -394,6 +394,9 @@ assert_value!(tokio::sync::broadcast::Receiver<YY>: Send & Sync & Unpin);
 assert_value!(tokio::sync::broadcast::Sender<NN>: !Send & !Sync & Unpin);
 assert_value!(tokio::sync::broadcast::Sender<YN>: Send & Sync & Unpin);
 assert_value!(tokio::sync::broadcast::Sender<YY>: Send & Sync & Unpin);
+assert_value!(tokio::sync::broadcast::WeakSender<NN>: !Send & !Sync & Unpin);
+assert_value!(tokio::sync::broadcast::WeakSender<YN>: Send & Sync & Unpin);
+assert_value!(tokio::sync::broadcast::WeakSender<YY>: Send & Sync & Unpin);
 assert_value!(tokio::sync::futures::Notified<'_>: Send & Sync & !Unpin);
 assert_value!(tokio::sync::mpsc::OwnedPermit<NN>: !Send & !Sync & Unpin);
 assert_value!(tokio::sync::mpsc::OwnedPermit<YN>: Send & Sync & Unpin);
@@ -756,4 +759,12 @@ mod unix_asyncfd {
     async_assert_fn!(AsyncFd<ImplsFd<NN>>::readable_mut(_): !Send & !Sync & !Unpin);
     async_assert_fn!(AsyncFd<ImplsFd<NN>>::writable(_): !Send & !Sync & !Unpin);
     async_assert_fn!(AsyncFd<ImplsFd<NN>>::writable_mut(_): !Send & !Sync & !Unpin);
+}
+
+#[cfg(tokio_unstable)]
+mod unstable {
+    use super::*;
+
+    assert_value!(tokio::runtime::LocalRuntime: !Send & !Sync & Unpin);
+    assert_value!(tokio::runtime::LocalOptions: !Send & !Sync & Unpin);
 }

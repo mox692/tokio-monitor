@@ -118,8 +118,8 @@
 
 use crate::loom::cell::UnsafeCell;
 use crate::loom::sync::atomic::{AtomicBool, AtomicUsize};
-use crate::loom::sync::{Arc, Mutex, MutexGuard, RwLock, RwLockReadGuard};
-use crate::runtime::coop::cooperative;
+use crate::loom::sync::{Arc, Mutex, MutexGuard};
+use crate::task::coop::cooperative;
 use crate::util::linked_list::{self, GuardedLinkedList, LinkedList};
 use crate::util::WakeList;
 
@@ -128,7 +128,7 @@ use std::future::Future;
 use std::marker::PhantomPinned;
 use std::pin::Pin;
 use std::ptr::NonNull;
-use std::sync::atomic::Ordering::{Acquire, Relaxed, Release, SeqCst};
+use std::sync::atomic::Ordering::{AcqRel, Acquire, Relaxed, Release, SeqCst};
 use std::task::{ready, Context, Poll, Waker};
 
 /// Sending-half of the [`broadcast`] channel.
@@ -163,6 +163,40 @@ use std::task::{ready, Context, Poll, Waker};
 ///
 /// [`broadcast`]: crate::sync::broadcast
 pub struct Sender<T> {
+    shared: Arc<Shared<T>>,
+}
+
+/// A sender that does not prevent the channel from being closed.
+///
+/// If all [`Sender`] instances of a channel were dropped and only `WeakSender`
+/// instances remain, the channel is closed.
+///
+/// In order to send messages, the `WeakSender` needs to be upgraded using
+/// [`WeakSender::upgrade`], which returns `Option<Sender>`. It returns `None`
+/// if all `Sender`s have been dropped, and otherwise it returns a `Sender`.
+///
+/// [`Sender`]: Sender
+/// [`WeakSender::upgrade`]: WeakSender::upgrade
+///
+/// # Examples
+///
+/// ```
+/// use tokio::sync::broadcast::channel;
+///
+/// #[tokio::main]
+/// async fn main() {
+///     let (tx, _rx) = channel::<i32>(15);
+///     let tx_weak = tx.downgrade();
+///
+///     // Upgrading will succeed because `tx` still exists.
+///     assert!(tx_weak.upgrade().is_some());
+///
+///     // If we drop `tx`, then it will fail.
+///     drop(tx);
+///     assert!(tx_weak.clone().upgrade().is_none());
+/// }
+/// ```
+pub struct WeakSender<T> {
     shared: Arc<Shared<T>>,
 }
 
@@ -306,7 +340,7 @@ use super::Notify;
 /// Data shared between senders and receivers.
 struct Shared<T> {
     /// slots in the channel.
-    buffer: Box<[RwLock<Slot<T>>]>,
+    buffer: Box<[Mutex<Slot<T>>]>,
 
     /// Mask a position -> index.
     mask: usize,
@@ -316,6 +350,9 @@ struct Shared<T> {
 
     /// Number of outstanding Sender handles.
     num_tx: AtomicUsize,
+
+    /// Number of outstanding weak Sender handles.
+    num_weak_tx: AtomicUsize,
 
     /// Notify when the last subscribed [`Receiver`] drops.
     notify_last_rx_drop: Notify,
@@ -353,7 +390,7 @@ struct Slot<T> {
     ///
     /// The value is set by `send` when the write lock is held. When a reader
     /// drops, `rem` is decremented. When it hits zero, the value is dropped.
-    val: UnsafeCell<Option<T>>,
+    val: Option<T>,
 }
 
 /// An entry in the wait queue.
@@ -391,7 +428,7 @@ generate_addr_of_methods! {
 }
 
 struct RecvGuard<'a, T> {
-    slot: RwLockReadGuard<'a, Slot<T>>,
+    slot: MutexGuard<'a, Slot<T>>,
 }
 
 /// Receive a value future.
@@ -400,11 +437,15 @@ struct Recv<'a, T> {
     receiver: &'a mut Receiver<T>,
 
     /// Entry in the waiter `LinkedList`.
-    waiter: UnsafeCell<Waiter>,
+    waiter: WaiterCell,
 }
 
-unsafe impl<'a, T: Send> Send for Recv<'a, T> {}
-unsafe impl<'a, T: Send> Sync for Recv<'a, T> {}
+// The wrapper around `UnsafeCell` isolates the unsafe impl `Send` and `Sync`
+// from `Recv`.
+struct WaiterCell(UnsafeCell<Waiter>);
+
+unsafe impl Send for WaiterCell {}
+unsafe impl Sync for WaiterCell {}
 
 /// Max number of receivers. Reserve space to lock.
 const MAX_RECEIVERS: usize = usize::MAX >> 2;
@@ -459,8 +500,10 @@ const MAX_RECEIVERS: usize = usize::MAX >> 2;
 ///
 /// # Panics
 ///
-/// This will panic if `capacity` is equal to `0` or larger
-/// than `usize::MAX / 2`.
+/// This will panic if `capacity` is equal to `0`.
+///
+/// This pre-allocates space for `capacity` messages. Allocation failure may result in a panic or
+/// [an allocation failure](std::alloc::handle_alloc_error).
 #[track_caller]
 pub fn channel<T: Clone>(capacity: usize) -> (Sender<T>, Receiver<T>) {
     // SAFETY: In the line below we are creating one extra receiver, so there will be 1 in total.
@@ -471,12 +514,6 @@ pub fn channel<T: Clone>(capacity: usize) -> (Sender<T>, Receiver<T>) {
     };
     (tx, rx)
 }
-
-unsafe impl<T: Send> Send for Sender<T> {}
-unsafe impl<T: Send> Sync for Sender<T> {}
-
-unsafe impl<T: Send> Send for Receiver<T> {}
-unsafe impl<T: Send> Sync for Receiver<T> {}
 
 impl<T> Sender<T> {
     /// Creates the sending-half of the [`broadcast`] channel.
@@ -516,10 +553,10 @@ impl<T> Sender<T> {
         let mut buffer = Vec::with_capacity(capacity);
 
         for i in 0..capacity {
-            buffer.push(RwLock::new(Slot {
+            buffer.push(Mutex::new(Slot {
                 rem: AtomicUsize::new(0),
                 pos: (i as u64).wrapping_sub(capacity as u64),
-                val: UnsafeCell::new(None),
+                val: None,
             }));
         }
 
@@ -533,6 +570,7 @@ impl<T> Sender<T> {
                 waiters: LinkedList::new(),
             }),
             num_tx: AtomicUsize::new(1),
+            num_weak_tx: AtomicUsize::new(0),
             notify_last_rx_drop: Notify::new(),
         });
 
@@ -606,7 +644,7 @@ impl<T> Sender<T> {
         tail.pos = tail.pos.wrapping_add(1);
 
         // Get the slot
-        let mut slot = self.shared.buffer[idx].write();
+        let mut slot = self.shared.buffer[idx].lock();
 
         // Track the position
         slot.pos = pos;
@@ -615,7 +653,7 @@ impl<T> Sender<T> {
         slot.rem.with_mut(|v| *v = rem);
 
         // Write the value
-        slot.val = UnsafeCell::new(Some(value));
+        slot.val = Some(value);
 
         // Release the slot lock before notifying the receivers.
         drop(slot);
@@ -654,6 +692,18 @@ impl<T> Sender<T> {
     pub fn subscribe(&self) -> Receiver<T> {
         let shared = self.shared.clone();
         new_receiver(shared)
+    }
+
+    /// Converts the `Sender` to a [`WeakSender`] that does not count
+    /// towards RAII semantics, i.e. if all `Sender` instances of the
+    /// channel were dropped and only `WeakSender` instances remain,
+    /// the channel is closed.
+    #[must_use = "Downgrade creates a WeakSender without destroying the original non-weak sender."]
+    pub fn downgrade(&self) -> WeakSender<T> {
+        self.shared.num_weak_tx.fetch_add(1, Relaxed);
+        WeakSender {
+            shared: self.shared.clone(),
+        }
     }
 
     /// Returns the number of queued values.
@@ -702,7 +752,7 @@ impl<T> Sender<T> {
         while low < high {
             let mid = low + (high - low) / 2;
             let idx = base_idx.wrapping_add(mid) & self.shared.mask;
-            if self.shared.buffer[idx].read().rem.load(SeqCst) == 0 {
+            if self.shared.buffer[idx].lock().rem.load(SeqCst) == 0 {
                 low = mid + 1;
             } else {
                 high = mid;
@@ -744,7 +794,7 @@ impl<T> Sender<T> {
         let tail = self.shared.tail.lock();
 
         let idx = (tail.pos.wrapping_sub(1) & self.shared.mask as u64) as usize;
-        self.shared.buffer[idx].read().rem.load(SeqCst) == 0
+        self.shared.buffer[idx].lock().rem.load(SeqCst) == 0
     }
 
     /// Returns the number of active receivers.
@@ -857,6 +907,16 @@ impl<T> Sender<T> {
         tail.closed = true;
 
         self.shared.notify_rx(tail);
+    }
+
+    /// Returns the number of [`Sender`] handles.
+    pub fn strong_count(&self) -> usize {
+        self.shared.num_tx.load(Acquire)
+    }
+
+    /// Returns the number of [`WeakSender`] handles.
+    pub fn weak_count(&self) -> usize {
+        self.shared.num_weak_tx.load(Acquire)
     }
 }
 
@@ -998,7 +1058,7 @@ impl<T> Shared<T> {
 impl<T> Clone for Sender<T> {
     fn clone(&self) -> Sender<T> {
         let shared = self.shared.clone();
-        shared.num_tx.fetch_add(1, SeqCst);
+        shared.num_tx.fetch_add(1, Relaxed);
 
         Sender { shared }
     }
@@ -1006,9 +1066,65 @@ impl<T> Clone for Sender<T> {
 
 impl<T> Drop for Sender<T> {
     fn drop(&mut self) {
-        if 1 == self.shared.num_tx.fetch_sub(1, SeqCst) {
+        if 1 == self.shared.num_tx.fetch_sub(1, AcqRel) {
             self.close_channel();
         }
+    }
+}
+
+impl<T> WeakSender<T> {
+    /// Tries to convert a `WeakSender` into a [`Sender`].
+    ///
+    /// This will return `Some` if there are other `Sender` instances alive and
+    /// the channel wasn't previously dropped, otherwise `None` is returned.
+    #[must_use]
+    pub fn upgrade(&self) -> Option<Sender<T>> {
+        let mut tx_count = self.shared.num_tx.load(Acquire);
+
+        loop {
+            if tx_count == 0 {
+                // channel is closed so this WeakSender can not be upgraded
+                return None;
+            }
+
+            match self
+                .shared
+                .num_tx
+                .compare_exchange_weak(tx_count, tx_count + 1, Relaxed, Acquire)
+            {
+                Ok(_) => {
+                    return Some(Sender {
+                        shared: self.shared.clone(),
+                    })
+                }
+                Err(prev_count) => tx_count = prev_count,
+            }
+        }
+    }
+
+    /// Returns the number of [`Sender`] handles.
+    pub fn strong_count(&self) -> usize {
+        self.shared.num_tx.load(Acquire)
+    }
+
+    /// Returns the number of [`WeakSender`] handles.
+    pub fn weak_count(&self) -> usize {
+        self.shared.num_weak_tx.load(Acquire)
+    }
+}
+
+impl<T> Clone for WeakSender<T> {
+    fn clone(&self) -> WeakSender<T> {
+        let shared = self.shared.clone();
+        shared.num_weak_tx.fetch_add(1, Relaxed);
+
+        Self { shared }
+    }
+}
+
+impl<T> Drop for WeakSender<T> {
+    fn drop(&mut self) {
+        self.shared.num_weak_tx.fetch_sub(1, AcqRel);
     }
 }
 
@@ -1111,7 +1227,7 @@ impl<T> Receiver<T> {
         let idx = (self.next & self.shared.mask as u64) as usize;
 
         // The slot holding the next value to read
-        let mut slot = self.shared.buffer[idx].read();
+        let mut slot = self.shared.buffer[idx].lock();
 
         if slot.pos != self.next {
             // Release the `slot` lock before attempting to acquire the `tail`
@@ -1128,7 +1244,7 @@ impl<T> Receiver<T> {
             let mut tail = self.shared.tail.lock();
 
             // Acquire slot lock again
-            slot = self.shared.buffer[idx].read();
+            slot = self.shared.buffer[idx].lock();
 
             // Make sure the position did not change. This could happen in the
             // unlikely event that the buffer is wrapped between dropping the
@@ -1212,6 +1328,42 @@ impl<T> Receiver<T> {
         self.next = self.next.wrapping_add(1);
 
         Ok(RecvGuard { slot })
+    }
+
+    /// Returns the number of [`Sender`] handles.
+    pub fn sender_strong_count(&self) -> usize {
+        self.shared.num_tx.load(Acquire)
+    }
+
+    /// Returns the number of [`WeakSender`] handles.
+    pub fn sender_weak_count(&self) -> usize {
+        self.shared.num_weak_tx.load(Acquire)
+    }
+
+    /// Checks if a channel is closed.
+    ///
+    /// This method returns `true` if the channel has been closed. The channel is closed
+    /// when all [`Sender`] have been dropped.
+    ///
+    /// [`Sender`]: crate::sync::broadcast::Sender
+    ///
+    /// # Examples
+    /// ```
+    /// use tokio::sync::broadcast;
+    ///
+    /// #[tokio::main]
+    /// async fn main() {
+    ///     let (tx, rx) = broadcast::channel::<()>(10);
+    ///     assert!(!rx.is_closed());
+    ///
+    ///     drop(tx);
+    ///
+    ///     assert!(rx.is_closed());
+    /// }
+    /// ```
+    pub fn is_closed(&self) -> bool {
+        // Channel is closed when there are no strong senders left active
+        self.shared.num_tx.load(Acquire) == 0
     }
 }
 
@@ -1426,12 +1578,12 @@ impl<'a, T> Recv<'a, T> {
     fn new(receiver: &'a mut Receiver<T>) -> Recv<'a, T> {
         Recv {
             receiver,
-            waiter: UnsafeCell::new(Waiter {
+            waiter: WaiterCell(UnsafeCell::new(Waiter {
                 queued: AtomicBool::new(false),
                 waker: None,
                 pointers: linked_list::Pointers::new(),
                 _p: PhantomPinned,
-            }),
+            })),
         }
     }
 
@@ -1443,7 +1595,7 @@ impl<'a, T> Recv<'a, T> {
             is_unpin::<&mut Receiver<T>>();
 
             let me = self.get_unchecked_mut();
-            (me.receiver, &me.waiter)
+            (me.receiver, &me.waiter.0)
         }
     }
 }
@@ -1487,6 +1639,7 @@ impl<'a, T> Drop for Recv<'a, T> {
         // `Shared::notify_rx` before we drop the object.
         let queued = self
             .waiter
+            .0
             .with(|ptr| unsafe { (*ptr).queued.load(Acquire) });
 
         // If the waiter is queued, we need to unlink it from the waiters list.
@@ -1501,6 +1654,7 @@ impl<'a, T> Drop for Recv<'a, T> {
             // `Relaxed` order suffices because we hold the tail lock.
             let queued = self
                 .waiter
+                .0
                 .with_mut(|ptr| unsafe { (*ptr).queued.load(Relaxed) });
 
             if queued {
@@ -1509,7 +1663,7 @@ impl<'a, T> Drop for Recv<'a, T> {
                 // safety: tail lock is held and the wait node is verified to be in
                 // the list.
                 unsafe {
-                    self.waiter.with_mut(|ptr| {
+                    self.waiter.0.with_mut(|ptr| {
                         tail.waiters.remove((&mut *ptr).into());
                     });
                 }
@@ -1544,6 +1698,12 @@ impl<T> fmt::Debug for Sender<T> {
     }
 }
 
+impl<T> fmt::Debug for WeakSender<T> {
+    fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(fmt, "broadcast::WeakSender")
+    }
+}
+
 impl<T> fmt::Debug for Receiver<T> {
     fn fmt(&self, fmt: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(fmt, "broadcast::Receiver")
@@ -1555,7 +1715,7 @@ impl<'a, T> RecvGuard<'a, T> {
     where
         T: Clone,
     {
-        self.slot.val.with(|ptr| unsafe { (*ptr).clone() })
+        self.slot.val.clone()
     }
 }
 
@@ -1563,8 +1723,7 @@ impl<'a, T> Drop for RecvGuard<'a, T> {
     fn drop(&mut self) {
         // Decrement the remaining counter
         if 1 == self.slot.rem.fetch_sub(1, SeqCst) {
-            // Safety: Last receiver, drop the value
-            self.slot.val.with_mut(|ptr| unsafe { *ptr = None });
+            self.slot.val = None;
         }
     }
 }

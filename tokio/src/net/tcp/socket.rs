@@ -368,7 +368,7 @@ impl TcpSocket {
     ///
     /// Note that if [`set_recv_buffer_size`] has been called on this socket
     /// previously, the value returned by this function may not be the same as
-    /// the argument provided to `set_send_buffer_size`. This is for the
+    /// the argument provided to `set_recv_buffer_size`. This is for the
     /// following reasons:
     ///
     /// * Most operating systems have minimum and maximum allowed sizes for the
@@ -743,12 +743,12 @@ impl TcpSocket {
     /// # Examples
     ///
     /// ```
-    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::TcpSocket;
     /// use socket2::{Domain, Socket, Type};
     ///
     /// #[tokio::main]
     /// async fn main() -> std::io::Result<()> {
+    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     let socket2_socket = Socket::new(Domain::IPV4, Type::STREAM, None)?;
     ///     socket2_socket.set_nonblocking(true)?;
     ///
