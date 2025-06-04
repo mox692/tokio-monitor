@@ -105,7 +105,6 @@ socket2 = { version = "0.5.5", optional = true, features = ["all"] }
 tracing = { version = "0.1.29", default-features = false, features = ["std"], optional = true } # Not in full
 [target.'cfg(all(target_arch = "x86_64", target_os = "linux"))'.dependencies]
 hopframe = { path = "../hopframe", optional = true }
-# tracing-perfetto = { path = "../tracing-perfetto", optional = true }
 rt-trace = { path = "../rt-trace", optional = true }
 
 [target.'cfg(all(tokio_uring, target_os = "linux"))'.dependencies]

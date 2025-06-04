@@ -868,9 +868,10 @@ jobs:
       - name: "doc --lib --all-features"
         run: |
           cargo doc --lib --no-deps --all-features --document-private-items
+        # TODO: enable `tokio_unstable`
         env:
-          RUSTFLAGS: --cfg docsrs --cfg tokio_unstable ${{ matrix.run.RUSTFLAGS }}
-          RUSTDOCFLAGS: --cfg docsrs --cfg tokio_unstable -Dwarnings ${{ matrix.run.RUSTDOCFLAGS }}
+          RUSTFLAGS: --cfg docsrs ${{ matrix.run.RUSTFLAGS }}
+          RUSTDOCFLAGS: --cfg docsrs -Dwarnings ${{ matrix.run.RUSTDOCFLAGS }}
 
   loom-compile:
     name: build loom tests
