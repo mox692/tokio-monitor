@@ -105,7 +105,7 @@ pub struct Runtime {
     /// Runtime span
     #[cfg(all(tokio_unstable, feature = "tracing"))]
     #[allow(dead_code)]
-    runtime_span: tracing::Span,
+    runtime_span: rt_trace::span::Span,
 }
 
 /// The flavor of a `Runtime`.
@@ -132,12 +132,12 @@ pub(super) enum Scheduler {
 }
 
 impl Runtime {
-    #[cfg(all(tokio_unstable, feature = "tracing"))]
+    #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
     pub(super) fn from_parts(
         scheduler: Scheduler,
         handle: Handle,
         blocking_pool: BlockingPool,
-        runtime_span: tracing::Span,
+        runtime_span: rt_trace::span::Span,
     ) -> Runtime {
         Runtime {
             scheduler,
@@ -146,7 +146,7 @@ impl Runtime {
             runtime_span,
         }
     }
-    #[cfg(not(all(tokio_unstable, feature = "tracing")))]
+    #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
     pub(super) fn from_parts(
         scheduler: Scheduler,
         handle: Handle,

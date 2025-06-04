@@ -1429,7 +1429,9 @@ impl Builder {
 
         #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
         {
-            let span = tracing::span!(tracing::Level::TRACE, "runtime", data = "runtime");
+            let span = rt_trace::span(rt_trace::span::Type::RuntimeStart(
+                rt_trace::span::RuntimeStart {},
+            ));
             Ok(Runtime::from_parts(
                 Scheduler::CurrentThread(scheduler),
                 handle,
@@ -1668,7 +1670,9 @@ cfg_rt_multi_thread! {
 
             #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
             {
-                let span = tracing::span!(tracing::Level::TRACE, "runtime", data = "runtime");
+                let span = rt_trace::span(rt_trace::span::Type::RuntimeStart(
+                    rt_trace::span::RuntimeStart {},
+                ));
                 return Ok(Runtime::from_parts(Scheduler::MultiThread(scheduler), handle, blocking_pool, span))
             };
 
