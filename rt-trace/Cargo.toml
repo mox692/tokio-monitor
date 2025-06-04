@@ -1,5 +1,6 @@
 [package]
 name = "rt-trace"
+edition = "2021"
 version = "0.1.0"
 
 categories = ["development-tools::debugging"]
@@ -35,6 +36,3 @@ prost-build = "=0.13.2"
 # protobuf compilation issue
 [target.'cfg(not(target_os = "windows"))'.build-dependencies]
 protobuf-src = "2.1"
-
-[profile.release]
-debug = true
