@@ -2,6 +2,9 @@ cfg_io_driver! {
     pub(crate) mod bit;
 }
 
+#[cfg(feature = "fs")]
+pub(crate) mod as_ref;
+
 #[cfg(feature = "rt")]
 pub(crate) mod atomic_cell;
 
@@ -12,6 +15,9 @@ mod blocking_check;
 pub(crate) use blocking_check::check_socket_for_blocking;
 
 pub(crate) mod metric_atomics;
+
+mod wake;
+pub(crate) use wake::{waker, Wake};
 
 #[cfg(any(
     // io driver uses `WakeList` directly
@@ -54,7 +60,7 @@ cfg_rt! {
     pub(crate) mod sharded_list;
 }
 
-#[cfg(any(feature = "rt", feature = "macros", feature = "time"))]
+#[cfg(any(feature = "rt", feature = "macros"))]
 pub(crate) mod rand;
 
 cfg_rt! {
@@ -63,9 +69,7 @@ cfg_rt! {
 
     pub(crate) use self::rand::RngSeedGenerator;
 
-    mod wake;
-    pub(crate) use wake::WakerRef;
-    pub(crate) use wake::{waker_ref, Wake};
+    pub(crate) use wake::{waker_ref, WakerRef};
 
     mod sync_wrapper;
     pub(crate) use sync_wrapper::SyncWrapper;
@@ -80,6 +84,9 @@ cfg_rt_multi_thread! {
 }
 
 pub(crate) mod trace;
+
+#[cfg(feature = "fs")]
+pub(crate) mod typeid;
 
 pub(crate) mod error;
 

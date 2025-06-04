@@ -351,6 +351,39 @@ jobs:
           # the unstable cfg to RustDoc
           RUSTDOCFLAGS: --cfg tokio_unstable --cfg tokio_taskdump
 
+  test-uring:
+    name: test tokio full --cfg tokio_uring
+    needs: basics
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust ${{ env.rust_stable }}
+        uses: dtolnay/rust-toolchain@stable
+        with:
+            toolchain: ${{ env.rust_stable }}
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+
+      - uses: Swatinem/rust-cache@v2
+      - name: test tokio full --cfg tokio_uring
+        run: |
+          set -euxo pipefail
+          cargo nextest run --all-features
+          cargo test --doc --all-features
+        working-directory: tokio
+        env:
+          RUSTFLAGS: --cfg tokio_uring -Dwarnings
+          # in order to run doctests for unstable features, we must also pass
+          # the unstable cfg to RustDoc
+          RUSTDOCFLAGS: --cfg tokio_uring
+
   check-unstable-mt-counters:
     name: check tokio full --internal-mt-counters
     needs: basics
@@ -476,10 +509,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Check semver
+      - name: Check `tokio` semver
         uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
           rust-toolchain: ${{ env.rust_stable }}
+          package: tokio
+          release-type: minor
+      - name: Check semver for rest of the workspace
+        if: ${{ !startsWith(github.event.pull_request.base.ref, 'tokio-1.') }}
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: ${{ env.rust_stable }}
+          exclude: tokio
           release-type: minor
           package: tokio
 
@@ -548,6 +589,8 @@ jobs:
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
             rustflags: --cfg tokio_taskdump
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust stable
@@ -592,6 +635,8 @@ jobs:
           - target: aarch64-unknown-linux-gnu
             os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
             rustflags: --cfg tokio_taskdump
+          - target: aarch64-pc-windows-msvc
+            os: windows-11-arm
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust stable
@@ -693,6 +738,8 @@ jobs:
           - { name: "--unstable", rustflags: "--cfg tokio_unstable -Dwarnings" }
           # Try with unstable and taskdump feature flags
           - { name: "--unstable --taskdump", rustflags: "--cfg tokio_unstable -Dwarnings --cfg tokio_taskdump" }
+          - { name: "--tokio_uring", rustflags: "-Dwarnings --cfg tokio_uring" }
+          - { name: "--unstable --taskdump --tokio_uring", rustflags: "--cfg tokio_unstable -Dwarnings --cfg tokio_taskdump --cfg tokio_uring" }
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust ${{ env.rust_nightly }}
@@ -720,7 +767,14 @@ jobs:
           toolchain: ${{ env.rust_min }}
       - uses: Swatinem/rust-cache@v2
       - name: "check --workspace --all-features"
-        run: cargo check --workspace --all-features
+        run: |
+          if [[ "${{ github.event.pull_request.base.ref }}" =~ ^tokio-1\..* ]]; then
+            # Only check `tokio` crate as the PR is backporting to an earlier tokio release.
+            cargo check -p tokio --all-features
+          else
+            # Check all crates in the workspace
+            cargo check --workspace --all-features
+          fi
         env:
           RUSTFLAGS: "" # remove -Dwarnings
 
@@ -748,7 +802,7 @@ jobs:
           cargo hack check --all-features --ignore-private --exclude tracing-perfetto
       - name: "check --all-features --unstable -Z minimal-versions"
         env:
-          RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings
+          RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump --cfg tokio_uring -Dwarnings
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
@@ -801,8 +855,8 @@ jobs:
           # Windows is not supported yet.
           # - os: windows-latest
           - os: ubuntu-latest
-            RUSTFLAGS: --cfg tokio_taskdump
-            RUSTDOCFLAGS: --cfg tokio_taskdump
+            RUSTFLAGS: --cfg tokio_taskdump --cfg tokio_uring
+            RUSTDOCFLAGS: --cfg tokio_taskdump --cfg tokio_uring
 
     steps:
       - uses: actions/checkout@v4

@@ -6,7 +6,7 @@ name = "tokio"
 #   - README.md
 # - Update CHANGELOG.md.
 # - Create "v1.x.y" git tag.
-version = "1.44.1"
+version = "1.45.1"
 edition = "2021"
 rust-version = "1.70"
 authors = ["Tokio Contributors <team@tokio.rs>"]
@@ -107,6 +107,12 @@ tracing = { version = "0.1.29", default-features = false, features = ["std"], op
 hopframe = { path = "../hopframe", optional = true }
 tracing-perfetto = { path = "../tracing-perfetto", optional = true }
 
+[target.'cfg(all(tokio_uring, target_os = "linux"))'.dependencies]
+io-uring = { version = "0.7.6", default-features = false }
+libc = { version = "0.2.168" }
+mio = { version = "1.0.1", default-features = false, features = ["os-poll", "os-ext"] }
+slab = "0.4.9"
+
 # Currently unstable. The API exposed by these features may be broken at any time.
 # Requires `--cfg tokio_unstable` to enable.
 [target.'cfg(tokio_taskdump)'.dependencies]
@@ -135,7 +141,7 @@ features = [
 tokio-test = { version = "0.4.0", path = "../tokio-test" }
 tokio-stream = { version = "0.1", path = "../tokio-stream" }
 futures = { version = "0.3.0", features = ["async-await"] }
-mockall = "0.11.1"
+mockall = "0.13.0"
 async-stream = "0.3"
 futures-concurrency = "7.6.3"
 
@@ -145,13 +151,13 @@ tempfile = "3.1.0"
 proptest = "1"
 
 [target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dev-dependencies]
-rand = "0.8.0"
+rand = "0.9"
 
 [target.'cfg(all(target_family = "wasm", not(target_os = "wasi")))'.dev-dependencies]
 wasm-bindgen-test = "0.3.0"
 
 [target.'cfg(target_os = "freebsd")'.dev-dependencies]
-mio-aio = { version = "0.9.0", features = ["tokio"] }
+mio-aio = { version = "1", features = ["tokio"] }
 
 [target.'cfg(loom)'.dev-dependencies]
 loom = { version = "0.7", features = ["futures", "checkpoint"] }
