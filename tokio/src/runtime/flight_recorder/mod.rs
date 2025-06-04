@@ -1,5 +1,3 @@
-use tracing_perfetto::external::tokio::TokioPerfettoLayerHandle;
-
 /// A trait that represents flight recorder behavior.
 pub trait FlightRecorder {
     /// Start flight recorder
@@ -16,20 +14,14 @@ pub trait FlightRecorder {
 
 /// Flight recorder implementation powered by perfetto tracing library.
 #[derive(Debug)]
-pub struct PerfettoFlightRecorder {
-    pub(crate) inner: TokioPerfettoLayerHandle,
-}
+pub struct PerfettoFlightRecorder {}
 
 impl FlightRecorder for PerfettoFlightRecorder {
     /// Start flight recorder
-    fn start(&mut self) {
-        self.inner.start()
-    }
+    fn start(&mut self) {}
 
     /// Stop flight recorder
-    fn stop(&mut self) {
-        self.inner.stop()
-    }
+    fn stop(&mut self) {}
 
     /// Flush current buffer to the specific
     fn flush_trace(&mut self) {}

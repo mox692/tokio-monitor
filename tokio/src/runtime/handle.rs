@@ -27,7 +27,6 @@ use std::{error, fmt, mem};
 cfg_runtime_tracing! {
     use super::flight_recorder::FlightRecorder;
     use super::flight_recorder::PerfettoFlightRecorder;
-    use tracing_perfetto::external::tokio::TokioPerfettoLayerHandle;
 }
 
 /// Runtime context guard.
@@ -448,7 +447,6 @@ impl Handle {
         /// Return a handle to the `FlightRecorder`.
         pub fn flight_recorder_handle(&self) -> impl FlightRecorder {
             PerfettoFlightRecorder {
-                inner: TokioPerfettoLayerHandle {}
             }
         }
     }

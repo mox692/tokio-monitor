@@ -1,7 +1,6 @@
 #[cfg(not(target_os = "windows"))]
 fn main() {
     use std::sync::atomic::{AtomicUsize, Ordering};
-    use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
     use tracing_subscriber::prelude::*;
 
     #[inline(never)]
