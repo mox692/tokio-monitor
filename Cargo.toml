@@ -8,6 +8,7 @@ members = [
   "tokio-util",
   "hopframe",
   "tracing-perfetto",
+  "rt-trace",
 
   # Internal
   "benches",
