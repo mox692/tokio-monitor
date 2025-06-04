@@ -26,7 +26,7 @@ libc = "0.2.147"
 windows-sys = { version = "0.59", features = ["Win32_System_Threading"] }
 
 [dev-dependencies]
-fastrace = "0.7.9"
+# fastrace = "0.7.9"
 criterion = "0.5"
 
 [build-dependencies]
