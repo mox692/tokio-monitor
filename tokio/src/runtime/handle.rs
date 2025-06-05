@@ -442,14 +442,6 @@ impl Handle {
     pub fn metrics(&self) -> RuntimeMetrics {
         RuntimeMetrics::new(self.clone())
     }
-
-    cfg_runtime_tracing! {
-        /// Return a handle to the `FlightRecorder`.
-        pub fn flight_recorder_handle(&self) -> impl FlightRecorder {
-            PerfettoFlightRecorder {
-            }
-        }
-    }
 }
 
 impl std::panic::UnwindSafe for Handle {}

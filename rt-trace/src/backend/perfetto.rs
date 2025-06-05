@@ -53,6 +53,7 @@ impl Default for TracePackets {
 }
 
 /// Reporter implementation for Perfetto tracing.
+#[derive(Debug)]
 pub struct PerfettoReporter {
     pid: i32,
     output: File,

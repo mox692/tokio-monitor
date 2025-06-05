@@ -616,28 +616,13 @@ impl Context {
             {
                 use rt_trace::span::{self, RunTask};
 
+                // TODO: gather backtarce with `with_backtrace`.
                 let _guard = rt_trace::span(span::Type::RunTask(RunTask {
                     name: Some("task1".to_string()),
                     ..Default::default()
                 }));
-                // let span = tracing::span!(
-                //     tracing::Level::TRACE,
-                //     "run_task",
-                //     name = task.task_id().0.get(),
-                //     tokio_runtime_event = "run_task",
-                //     stacktrace = tracing::field::Empty
-                // );
-                // let _enter = span.enter();
 
                 task.run();
-
-                // drop(_enter);
-
-                // let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
-                //     .flatten()
-                //     .unwrap_or_default();
-
-                // span.record("stacktrace", &bt.as_str());
             }
 
             #[cfg(not(all(
@@ -731,31 +716,12 @@ impl Context {
                 {
                     use rt_trace::span::{self, RunTask};
 
+                    // TODO: gather backtarce with `with_backtrace`.
                     let _guard = rt_trace::span(span::Type::RunTask(RunTask {
                         name: Some("task1".to_string()),
                         ..Default::default()
                     }));
-                    // let span = tracing::span!(
-                    //     tracing::Level::TRACE,
-                    //     "run_task",
-                    //     name = task.id().0,
-                    //     tokio_runtime_event = "run_task",
-                    //     stacktrace = tracing::field::Empty
-                    // );
-                    // let _enter = span.enter();
-
-                    // task.run();
-
-                    // drop(_enter);
-
-                    // let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
-                    //     .flatten()
-                    //     .unwrap_or_default();
-
-                    // span.record("stacktrace", &bt.as_str());
-
-                    #[cfg(tokio_unstable)]
-                    self.worker.handle.task_hooks.poll_stop_callback(task_id);
+                    task.run();
                 }
 
                 #[cfg(not(all(
