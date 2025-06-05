@@ -1,4 +1,4 @@
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(tokio_unstable, target_os = "linux", target_arch = "x86_64"))]
 fn main() {
     use std::sync::atomic::{AtomicUsize, Ordering};
     use tokio::runtime::{FlightRecorder, PerfettoFlightRecorder};
@@ -49,5 +49,5 @@ fn main() {
     recorder.flush_trace();
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(all(tokio_unstable, target_os = "linux", target_arch = "x86_64")))]
 fn main() {}
