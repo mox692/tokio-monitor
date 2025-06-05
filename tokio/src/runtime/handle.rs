@@ -24,11 +24,6 @@ use std::future::Future;
 use std::marker::PhantomData;
 use std::{error, fmt, mem};
 
-cfg_runtime_tracing! {
-    use super::flight_recorder::FlightRecorder;
-    use super::flight_recorder::PerfettoFlightRecorder;
-}
-
 /// Runtime context guard.
 ///
 /// Returned by [`Runtime::enter`] and [`Handle::enter`], the context guard exits

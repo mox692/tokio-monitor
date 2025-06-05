@@ -827,8 +827,9 @@ impl Context {
             target_arch = "x86_64"
         ))]
         {
-            let span = tracing::span!(tracing::Level::TRACE, "park", tokio_runtime_event = "park");
-            let _enter = span.enter();
+            use rt_trace::span::{self, RuntimePark};
+
+            let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
 
             // Park thread
             if let Some(timeout) = duration {
@@ -836,8 +837,6 @@ impl Context {
             } else {
                 park.park(&self.worker.handle.driver);
             }
-            drop(_enter);
-            drop(span);
         }
         #[cfg(not(all(
             tokio_unstable,

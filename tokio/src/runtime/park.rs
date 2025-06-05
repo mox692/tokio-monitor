@@ -1,8 +1,5 @@
 #![cfg_attr(not(feature = "full"), allow(dead_code))]
 
-#[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
-use tracing::Level;
-
 use crate::loom::sync::atomic::AtomicUsize;
 use crate::loom::sync::{Arc, Condvar, Mutex};
 use crate::util::{waker, Wake};
@@ -287,20 +284,16 @@ impl CachedParkThread {
         loop {
             #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
             {
-                let run_span = tracing::span!(
-                    parent: None,
-                    Level::TRACE,
-                    "run task",
-                    name = "root",
-                    tokio_runtime_event ="run_task",
-                    stacktrace = "stacktrace"
-                );
-                let run_span_enter = run_span.enter();
+                use rt_trace::span::{self, RunTask};
+
+                let _guard = rt_trace::span(span::Type::RunTask(RunTask {
+                    name: Some("task1".to_string()),
+                    ..Default::default()
+                }));
+
                 if let Ready(v) = crate::task::coop::budget(|| f.as_mut().poll(&mut cx)) {
-                    drop(run_span_enter);
                     return Ok(v);
                 }
-                drop(run_span_enter);
             }
             #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
             {
@@ -311,13 +304,10 @@ impl CachedParkThread {
 
             #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
             {
-                let park_span =
-                    tracing::span!(parent: None, Level::TRACE, "park", tokio_runtime_event ="park");
-                let park_span_enter = park_span.enter();
+                use rt_trace::span::{self, RuntimePark};
 
+                let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
                 self.park();
-
-                drop(park_span_enter);
             }
             #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
             {

@@ -1,4 +1,4 @@
-use rt_trace::{backend::perfetto::PerfettoReporter, config::Config, consumer, initialize};
+use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
 
 /// A trait that represents flight recorder behavior.
 pub trait FlightRecorder {
