@@ -1216,7 +1216,7 @@ jobs:
           }
       - name: Run cargo-spellcheck
         run: |
-          if ! cargo spellcheck --exclude rt-trace --code 1
+          if ! cargo spellcheck --code 1
           then
               echo ''
               echo ''
