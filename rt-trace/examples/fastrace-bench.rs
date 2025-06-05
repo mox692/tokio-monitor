@@ -36,3 +36,5 @@
 //     let dur = now.elapsed();
 //     println!("dur: {:?}", &dur);
 // }
+
+fn main() {}

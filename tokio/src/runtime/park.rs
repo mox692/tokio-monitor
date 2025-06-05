@@ -282,7 +282,12 @@ impl CachedParkThread {
         pin!(f);
 
         loop {
-            #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
             {
                 use rt_trace::span::{self, RunTask};
 
@@ -295,21 +300,36 @@ impl CachedParkThread {
                     return Ok(v);
                 }
             }
-            #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
             {
                 if let Ready(v) = crate::task::coop::budget(|| f.as_mut().poll(&mut cx)) {
                     return Ok(v);
                 }
             }
 
-            #[cfg(all(tokio_unstable, feature = "runtime-tracing"))]
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
             {
                 use rt_trace::span::{self, RuntimePark};
 
                 let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
                 self.park();
             }
-            #[cfg(not(all(tokio_unstable, feature = "runtime-tracing")))]
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
             {
                 self.park();
             }

@@ -74,3 +74,5 @@
 //     run_rt_trace(1000_000_0);
 //     run_fastrace(1000_000_0);
 // }
+
+fn main() {}
