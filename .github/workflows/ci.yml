@@ -1214,6 +1214,8 @@ jobs:
             LC_ALL=en_US.UTF8 sort -u <(sed '1d' $FILE)
             false
           }
+      - name: ignore rt-trace directory
+        run: rm -rf rt-trace
       - name: Run cargo-spellcheck
         run: |
           if ! cargo spellcheck --code 1
