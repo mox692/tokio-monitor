@@ -24,12 +24,6 @@ use std::future::Future;
 use std::marker::PhantomData;
 use std::{error, fmt, mem};
 
-cfg_runtime_tracing! {
-    use super::flight_recorder::FlightRecorder;
-    use super::flight_recorder::PerfettoFlightRecorder;
-    use tracing_perfetto::external::tokio::TokioPerfettoLayerHandle;
-}
-
 /// Runtime context guard.
 ///
 /// Returned by [`Runtime::enter`] and [`Handle::enter`], the context guard exits
@@ -442,15 +436,6 @@ impl Handle {
     /// is performing.
     pub fn metrics(&self) -> RuntimeMetrics {
         RuntimeMetrics::new(self.clone())
-    }
-
-    cfg_runtime_tracing! {
-        /// Return a handle to the `FlightRecorder`.
-        pub fn flight_recorder_handle(&self) -> impl FlightRecorder {
-            PerfettoFlightRecorder {
-                inner: TokioPerfettoLayerHandle {}
-            }
-        }
     }
 }
 

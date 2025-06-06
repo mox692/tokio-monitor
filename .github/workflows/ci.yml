@@ -796,20 +796,20 @@ jobs:
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
+          cargo hack --remove-dev-deps --workspace --exclude rt-trace
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
+          cargo hack check --all-features --ignore-private --exclude rt-trace
       - name: "check --all-features --unstable -Z minimal-versions"
         env:
           RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump --cfg tokio_uring -Dwarnings
         run: |
           # Remove dev-dependencies from Cargo.toml to prevent the next `cargo update`
           # from determining minimal versions based on dev-dependencies.
-          cargo hack --remove-dev-deps --workspace --exclude tracing-perfetto
+          cargo hack --remove-dev-deps --workspace --exclude rt-trace
           # Update Cargo.lock to minimal version dependencies.
           cargo update -Z minimal-versions
-          cargo hack check --all-features --ignore-private --exclude tracing-perfetto
+          cargo hack check --all-features --ignore-private --exclude rt-trace
 
   fmt:
     name: fmt
@@ -844,7 +844,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       # Run clippy
       - name: "clippy --all"
-        run: cargo clippy --all --tests --all-features --no-deps
+        run: cargo clippy --all --tests --all-features --no-deps --exclude rt-trace
 
   docs:
     name: docs
@@ -867,9 +867,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: "doc --lib --all-features"
         run: |
-          cargo doc --lib --no-deps --all-features --document-private-items
+          cargo doc --workspace --lib --no-deps --all-features --document-private-items --exclude rt-trace
+        # TODO: enable `tokio_unstable`
         env:
-          RUSTFLAGS: --cfg docsrs --cfg tokio_unstable ${{ matrix.run.RUSTFLAGS }}
+          RUSTFLAGS: --cfg tokio_unstable ${{ matrix.run.RUSTFLAGS }}
           RUSTDOCFLAGS: --cfg docsrs --cfg tokio_unstable -Dwarnings ${{ matrix.run.RUSTDOCFLAGS }}
 
   loom-compile:
@@ -1213,6 +1214,8 @@ jobs:
             LC_ALL=en_US.UTF8 sort -u <(sed '1d' $FILE)
             false
           }
+      - name: ignore rt-trace directory
+        run: rm -rf rt-trace
       - name: Run cargo-spellcheck
         run: |
           if ! cargo spellcheck --code 1
@@ -1227,7 +1230,7 @@ jobs:
           fi
       - name: Detect trailing whitespace
         run: |
-          if grep --exclude-dir=.git --exclude-dir=target --exclude-dir=tracing-perfetto -rne '\s$' .
+          if grep --exclude-dir=.git --exclude-dir=target --exclude-dir=rt-trace -rne '\s$' .
           then
               echo ''
               echo 'Please remove trailing whitespace from these lines.'

@@ -614,24 +614,15 @@ impl Context {
                 target_arch = "x86_64"
             ))]
             {
-                let span = tracing::span!(
-                    tracing::Level::TRACE,
-                    "run_task",
-                    name = task.task_id().0.get(),
-                    tokio_runtime_event = "run_task",
-                    stacktrace = tracing::field::Empty
-                );
-                let _enter = span.enter();
+                use rt_trace::span::{self, RunTask};
+
+                // TODO: gather backtarce with `with_backtrace`.
+                let _guard = rt_trace::span(span::Type::RunTask(RunTask {
+                    name: Some("task1".to_string()),
+                    ..Default::default()
+                }));
 
                 task.run();
-
-                drop(_enter);
-
-                let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
-                    .flatten()
-                    .unwrap_or_default();
-
-                span.record("stacktrace", &bt.as_str());
             }
 
             #[cfg(not(all(
@@ -723,27 +714,14 @@ impl Context {
                     target_arch = "x86_64"
                 ))]
                 {
-                    let span = tracing::span!(
-                        tracing::Level::TRACE,
-                        "run_task",
-                        name = task.id().0,
-                        tokio_runtime_event = "run_task",
-                        stacktrace = tracing::field::Empty
-                    );
-                    let _enter = span.enter();
+                    use rt_trace::span::{self, RunTask};
 
+                    // TODO: gather backtarce with `with_backtrace`.
+                    let _guard = rt_trace::span(span::Type::RunTask(RunTask {
+                        name: Some("task1".to_string()),
+                        ..Default::default()
+                    }));
                     task.run();
-
-                    drop(_enter);
-
-                    let bt = crate::runtime::context::with_backtrace(|bt| bt.take())
-                        .flatten()
-                        .unwrap_or_default();
-
-                    span.record("stacktrace", &bt.as_str());
-
-                    #[cfg(tokio_unstable)]
-                    self.worker.handle.task_hooks.poll_stop_callback(task_id);
                 }
 
                 #[cfg(not(all(
@@ -849,8 +827,9 @@ impl Context {
             target_arch = "x86_64"
         ))]
         {
-            let span = tracing::span!(tracing::Level::TRACE, "park", tokio_runtime_event = "park");
-            let _enter = span.enter();
+            use rt_trace::span::{self, RuntimePark};
+
+            let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
 
             // Park thread
             if let Some(timeout) = duration {
@@ -858,8 +837,6 @@ impl Context {
             } else {
                 park.park(&self.worker.handle.driver);
             }
-            drop(_enter);
-            drop(span);
         }
         #[cfg(not(all(
             tokio_unstable,

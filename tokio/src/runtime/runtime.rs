@@ -101,11 +101,6 @@ pub struct Runtime {
 
     /// Blocking pool handle, used to signal shutdown
     blocking_pool: BlockingPool,
-
-    /// Runtime span
-    #[cfg(all(tokio_unstable, feature = "tracing"))]
-    #[allow(dead_code)]
-    runtime_span: tracing::Span,
 }
 
 /// The flavor of a `Runtime`.
@@ -132,21 +127,6 @@ pub(super) enum Scheduler {
 }
 
 impl Runtime {
-    #[cfg(all(tokio_unstable, feature = "tracing"))]
-    pub(super) fn from_parts(
-        scheduler: Scheduler,
-        handle: Handle,
-        blocking_pool: BlockingPool,
-        runtime_span: tracing::Span,
-    ) -> Runtime {
-        Runtime {
-            scheduler,
-            handle,
-            blocking_pool,
-            runtime_span,
-        }
-    }
-    #[cfg(not(all(tokio_unstable, feature = "tracing")))]
     pub(super) fn from_parts(
         scheduler: Scheduler,
         handle: Handle,

@@ -1,8 +1,7 @@
-#[cfg(not(target_os = "windows"))]
+#[cfg(all(tokio_unstable, target_os = "linux", target_arch = "x86_64"))]
 fn main() {
     use std::sync::atomic::{AtomicUsize, Ordering};
-    use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
-    use tracing_subscriber::prelude::*;
+    use tokio::runtime::{FlightRecorder, PerfettoFlightRecorder};
 
     #[inline(never)]
     async fn foo() {
@@ -15,7 +14,7 @@ fn main() {
     #[inline(never)]
     async fn baz() {
         let mut handles = vec![];
-        for i in 0..10000 {
+        for i in 0..10 {
             handles.push(tokio::task::spawn(async move {
                 tokio::time::sleep(std::time::Duration::from_micros(i * 10)).await;
             }));
@@ -26,11 +25,9 @@ fn main() {
         }
     }
 
-    let layer = TokioPerfettoLayerBuilder::new()
-        .file_name("./test.pftrace")
-        .build();
-
-    tracing_subscriber::registry().with(layer).init();
+    let mut recorder = PerfettoFlightRecorder::new("./test.pftrace");
+    recorder.initialize();
+    recorder.start();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -45,7 +42,12 @@ fn main() {
     rt.block_on(async {
         tokio::spawn(async { foo().await }).await.unwrap();
     });
+
+    // Dropping is required to flush all spans.
+    drop(rt);
+
+    recorder.flush_trace();
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(all(tokio_unstable, target_os = "linux", target_arch = "x86_64")))]
 fn main() {}
