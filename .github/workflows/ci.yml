@@ -1127,7 +1127,7 @@ jobs:
         rust:
           # `check-external-types` requires a specific Rust nightly version. See
           # the README for details: https://github.com/awslabs/cargo-check-external-types
-          - nightly-2024-06-30
+          - nightly-2025-05-04
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust ${{ matrix.rust }}
