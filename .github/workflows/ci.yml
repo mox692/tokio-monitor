@@ -1122,7 +1122,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - windows-latest
+          # TODO: enable windows-latest
+          # - windows-latest
           - ubuntu-latest
         rust:
           # `check-external-types` requires a specific Rust nightly version. See

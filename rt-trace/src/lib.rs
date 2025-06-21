@@ -1,8 +1,10 @@
 use config::Config;
 use consumer::{SpanConsumer, GLOBAL_SPAN_CONSUMER};
 use span::{RawSpan, Span, Type};
-use span_queue::with_span_queue;
-use std::{sync::atomic::AtomicBool, time::Duration};
+use std::{
+    sync::atomic::{AtomicBool, AtomicUsize, Ordering},
+    time::Duration,
+};
 use utils::thread_id;
 pub mod backend;
 pub(crate) mod command;
@@ -13,8 +15,16 @@ pub(crate) mod span_queue;
 mod utils;
 use fastant::Instant;
 
+use crate::{
+    backend::perfetto::thread_descriptor,
+    span_queue::{with_span_queue, SPAN_QUEUE_STORE, THREAD_INITIALIZED},
+};
+
 #[cfg(test)]
 mod tests;
+
+/// This should be set at the initialization of the library.
+pub(crate) static SHARD_NUM: AtomicUsize = AtomicUsize::new(DEFAULT_NUM_SHARD);
 
 /// Whether tracing is enabled or not.
 static ENABLED: AtomicBool = AtomicBool::new(false);
@@ -34,15 +44,23 @@ fn set_enabled(set: bool) {
 pub fn span(typ: Type) -> Span {
     with_span_queue(|span_queue| {
         if enabled() {
-            Span {
-                inner: Some(RawSpan {
-                    typ,
-                    thread_id: thread_id::get() as u64,
-                    start: Instant::now(),
-                    end: Instant::ZERO,
-                }),
-                span_queue_handle: span_queue.clone(),
-            }
+            THREAD_INITIALIZED.with(|current| {
+                // Is this the first time this thread is creating a span?
+                if !current.get() {
+                    span_queue.lock().push(thread_descriptor());
+                    current.replace(true);
+                }
+
+                Span {
+                    inner: Some(RawSpan {
+                        typ,
+                        thread_id: thread_id::get() as u64,
+                        start: Instant::now(),
+                        end: Instant::ZERO,
+                    }),
+                    span_queue_handle: span_queue.clone(),
+                }
+            })
         } else {
             Span {
                 inner: None,
@@ -68,10 +86,17 @@ pub fn start() {
     set_enabled(true)
 }
 
+const DEFAULT_NUM_SHARD: usize = 16;
+
 /// Initialize tracing.
 #[inline]
 pub fn initialize(config: Config, consumer: impl SpanConsumer + 'static) {
-    GLOBAL_SPAN_CONSUMER.lock().unwrap().consumer = Some(Box::new(consumer));
+    SHARD_NUM.store(
+        config.num_shard.unwrap_or(DEFAULT_NUM_SHARD),
+        Ordering::Relaxed,
+    );
+
+    GLOBAL_SPAN_CONSUMER.lock().consumer = Some(Box::new(consumer));
 
     // spawn consumer thread
     std::thread::Builder::new()
@@ -83,7 +108,7 @@ pub fn initialize(config: Config, consumer: impl SpanConsumer + 'static) {
                     .unwrap_or(Duration::from_millis(10)),
             );
 
-            GLOBAL_SPAN_CONSUMER.lock().unwrap().handle_commands();
+            GLOBAL_SPAN_CONSUMER.lock().collect_and_push_commands();
         })
         .unwrap();
 }
@@ -96,10 +121,17 @@ pub fn initialize(config: Config, consumer: impl SpanConsumer + 'static) {
 /// thread and collect the spans into the consumer thread *before* calling this function.
 #[inline]
 pub fn flush() {
-    let handle = std::thread::spawn(|| {
-        let mut global_consumer = GLOBAL_SPAN_CONSUMER.lock().unwrap();
-        global_consumer.handle_commands();
-    });
+    // 1. flush the local span queue.
+    stop();
+    let len = SPAN_QUEUE_STORE.len();
+    for index in 0..len {
+        // Note: Without stopping the span emitting, this lock acquisition could contend.
+        SPAN_QUEUE_STORE.get(index).lock().flush();
+    }
+    start();
 
-    handle.join().unwrap()
+    // 2. flush the global span queue.
+    let mut global_consumer = GLOBAL_SPAN_CONSUMER.lock();
+    global_consumer.collect_and_push_commands();
+    global_consumer.flush();
 }
