@@ -1,3 +1,5 @@
+use std::io::Write;
+
 use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
 
 /// A trait that represents flight recorder behavior.
@@ -12,7 +14,7 @@ pub trait FlightRecorder {
     fn stop(&mut self);
 
     /// Flush current buffer content to the specific storage
-    fn flush_trace(&mut self);
+    fn flush_trace<W: Write>(&mut self, writer: &mut W);
 }
 
 // perfetto impl
@@ -25,7 +27,7 @@ pub struct PerfettoFlightRecorder {
 
 impl PerfettoFlightRecorder {
     /// Create a new instance of `PerfettoFlightRecorder`.
-    pub fn new(_file_name: &str) -> Self {
+    pub fn new() -> Self {
         Self {
             config: Config::default(),
         }
@@ -35,7 +37,7 @@ impl PerfettoFlightRecorder {
 impl FlightRecorder for PerfettoFlightRecorder {
     fn initialize(&mut self) {
         let config = std::mem::take(&mut self.config);
-        let consumer = PerfettoReporter::new("./test.pftrace");
+        let consumer = PerfettoReporter::new();
         rt_trace::initialize(config, consumer);
     }
     /// Start flight recorder
@@ -49,8 +51,8 @@ impl FlightRecorder for PerfettoFlightRecorder {
     }
 
     /// Flush current buffer to the specific
-    fn flush_trace(&mut self) {
-        rt_trace::flush();
+    fn flush_trace<W: Write>(&mut self, writer: &mut W) {
+        rt_trace::flush(writer);
     }
 }
 
