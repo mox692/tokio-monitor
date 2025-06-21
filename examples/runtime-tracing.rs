@@ -1,6 +1,9 @@
 #[cfg(all(tokio_unstable, target_os = "linux", target_arch = "x86_64"))]
 fn main() {
-    use std::sync::atomic::{AtomicUsize, Ordering};
+    use std::{
+        fs::File,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
     use tokio::runtime::{FlightRecorder, PerfettoFlightRecorder};
 
     #[inline(never)]
@@ -25,7 +28,8 @@ fn main() {
         }
     }
 
-    let mut recorder = PerfettoFlightRecorder::new("./test.pftrace");
+    let mut file = File::create("./test.pftrace").unwrap();
+    let mut recorder = PerfettoFlightRecorder::new();
     recorder.initialize();
     recorder.start();
 
@@ -46,7 +50,7 @@ fn main() {
     // Dropping is required to flush all spans.
     drop(rt);
 
-    recorder.flush_trace();
+    recorder.flush_trace(&mut file);
 }
 
 #[cfg(not(all(tokio_unstable, target_os = "linux", target_arch = "x86_64")))]
