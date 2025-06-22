@@ -500,17 +500,6 @@ fn run(worker: Arc<Worker>) {
             defer: Defer::new(),
         });
 
-        #[cfg(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ))]
-        tracing::trace!(
-            tokio_runtime_event = "worker start",
-            target = "flihgt_recorder"
-        );
-
         context::set_scheduler(&cx, || {
             let cx = cx.expect_multi_thread();
 
@@ -575,12 +564,7 @@ impl Context {
             }
         }
 
-        #[cfg(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ))]
+        #[cfg(feature = "runtime-tracing")]
         {
             use rt_trace::span::{self, RuntimeTerminate};
 
@@ -591,12 +575,8 @@ impl Context {
             // Signal shutdown
             self.worker.handle.shutdown_core(core);
         }
-        #[cfg(not(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        )))]
+
+        #[cfg(not(feature = "runtime-tracing"))]
         {
             core.pre_shutdown(&self.worker);
             // Signal shutdown
@@ -634,12 +614,7 @@ impl Context {
             #[cfg(tokio_unstable)]
             self.worker.handle.task_hooks.poll_start_callback(task_id);
 
-            #[cfg(all(
-                tokio_unstable,
-                feature = "runtime-tracing",
-                target_os = "linux",
-                target_arch = "x86_64"
-            ))]
+            #[cfg(feature = "runtime-tracing")]
             {
                 use rt_trace::span::{self, RunTask};
 
@@ -652,12 +627,7 @@ impl Context {
                 task.run();
             }
 
-            #[cfg(not(all(
-                tokio_unstable,
-                feature = "runtime-tracing",
-                target_os = "linux",
-                target_arch = "x86_64"
-            )))]
+            #[cfg(not(feature = "runtime-tracing"))]
             {
                 task.run();
             }
@@ -734,12 +704,7 @@ impl Context {
                 #[cfg(tokio_unstable)]
                 self.worker.handle.task_hooks.poll_start_callback(task_id);
 
-                #[cfg(all(
-                    tokio_unstable,
-                    feature = "runtime-tracing",
-                    target_os = "linux",
-                    target_arch = "x86_64"
-                ))]
+                #[cfg(feature = "runtime-tracing")]
                 {
                     use rt_trace::span::{self, RunTask};
 
@@ -751,12 +716,7 @@ impl Context {
                     task.run();
                 }
 
-                #[cfg(not(all(
-                    tokio_unstable,
-                    feature = "runtime-tracing",
-                    target_os = "linux",
-                    target_arch = "x86_64"
-                )))]
+                #[cfg(not(feature = "runtime-tracing"))]
                 {
                     task.run();
                 }

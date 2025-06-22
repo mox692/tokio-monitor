@@ -173,12 +173,7 @@ impl Driver {
             }
         };
 
-        #[cfg(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ))]
+        #[cfg(feature = "runtime-tracing")]
         {
             use rt_trace::span::{self, RuntimeDriver};
             let _guard = rt_trace::span(span::Type::RuntimeDriver(RuntimeDriver {}));
@@ -186,12 +181,7 @@ impl Driver {
             epoll_wait();
         }
 
-        #[cfg(not(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        )))]
+        #[cfg(not(feature = "runtime-tracing"))]
         {
             // Block waiting for an event to happen, peeling out how many events
             // happened.

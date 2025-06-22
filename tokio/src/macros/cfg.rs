@@ -527,24 +527,6 @@ macro_rules! cfg_runtime_tracing_backtrace {
     };
 }
 
-macro_rules! runtime_backgrace {
-    ($($item:item)*) => {
-        $(
-            #[cfg_attr(
-                cfg(all(
-                    tokio_unstable,
-                    feature = "runtime-tracing",
-                    feature = "macros",
-                    target_os = "linux",
-                    target_arch = "x86_64"
-                )),
-                crate::trace_on_pending_backtrace
-            )]
-            $item
-        )*
-    };
-}
-
 macro_rules! cfg_not_runtime_tracing {
     ($($item:item)*) => {
         $(
