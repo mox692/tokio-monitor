@@ -1,6 +1,6 @@
 #[cfg(tokio_unstable)]
 use crate::runtime;
-#[cfg(all(feature = "runtime-tracing"))]
+#[cfg(feature = "runtime-tracing")]
 use crate::runtime::FlightRecorderHandle;
 use crate::runtime::{context, scheduler, RuntimeFlavor, RuntimeMetrics};
 

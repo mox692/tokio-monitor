@@ -1,4 +1,4 @@
-#![cfg(all(feature = "runtime-tracing"))]
+#![cfg(feature = "runtime-tracing")]
 
 use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
 use std::{io::Write, sync::Arc};

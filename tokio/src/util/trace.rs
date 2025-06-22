@@ -190,11 +190,15 @@ cfg_runtime_tracing_backtrace! {
     #[allow(unused)]
     pub(crate) fn gen_backtrace() -> String {
         use hopframe::unwinder::UnwindBuilderX86_64;
+        use std::fmt::Write;
 
         let mut unwinder = UnwindBuilderX86_64::new().build();
-        let iter = unwinder.unwind();
-
-        let s: String = iter.map(|f| format!("{:?},", f.address())).collect();
-        s
+        unwinder
+            .unwind()
+            .fold(String::new(), |mut acc, frame| {
+                write!(&mut acc, "{:?},", frame.address())
+                    .expect("writing to String cannot fail");
+                acc
+            })
     }
 }
