@@ -8,23 +8,37 @@ This is a fork project of [tokio](https://github.com/tokio-rs/tokio) with additi
 Just replace the dependency:
 ```diff
 [dependencies]
-- tokio = "1"
-+ tokio-monitor = { git = "https://github.com/mox692/tokio-monitor" }
+-  tokio = { version = "1", features = ["full"] }
++ tokio-monitor = { git = "https://github.com/mox692/tokio-monitor", features = ["full"]}
 ```
 
 Here is a simple example:
 
 ```rust,ignore
-use std::sync::atomic::{AtomicUsize, Ordering};
-use tracing_perfetto::external::tokio::TokioPerfettoLayerBuilder;
-use tracing_subscriber::prelude::*;
-
 fn main() {
-    let layer = TokioPerfettoLayerBuilder::new()
-        .file_name("./test.pftrace")
-        .build();
+    use std::{
+        fs::File,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+    use tokio::runtime::{FlightRecorder, PerfettoFlightRecorder};
 
-    tracing_subscriber::registry().with(layer).init();
+    async fn foo() {
+        let mut handles = vec![];
+        for i in 0..10 {
+            handles.push(tokio::task::spawn(async move {
+                tokio::time::sleep(std::time::Duration::from_micros(i * 10)).await;
+            }));
+        }
+
+        for handle in handles {
+            let _ = handle.await;
+        }
+    }
+
+    let mut file = File::create("./test.pftrace").unwrap();
+    let mut recorder = PerfettoFlightRecorder::new();
+    recorder.initialize();
+    recorder.start();
 
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -37,32 +51,12 @@ fn main() {
         .unwrap();
 
     rt.block_on(async {
-        tokio::spawn(async { run().await }).await.unwrap();
+        tokio::spawn(async { foo().await }).await.unwrap();
     });
+
+    recorder.flush_trace(&mut file);
 }
-
-async fn run() {
-    let mut handles = vec![];
-    for i in 0..10000 {
-        handles.push(tokio::task::spawn(async move {
-            tokio::time::sleep(std::time::Duration::from_micros(i * 10)).await;
-        }));
-    }
-
-    for handle in handles {
-        let _ = handle.await;
-    }
-}
-
 ```
 
 The trace output would be created in your current directory `./trace.pftrace`. Then you
 can use [Perfetto-UI](https://ui.perfetto.dev/) to visualize the trace.
-
-
-# Symbolize
-```bash
-cd tracing-perfetto \
-cargo run --features symbolize --package tracing-perfetto --bin perfetto_symbolize \
-    -- --bin-path ./target/debug/examples/runtime-tracing  --perfetto-trace-log ./test.pftrace
-```

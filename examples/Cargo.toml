@@ -103,5 +103,9 @@ path = "dump.rs"
 name = "runtime-tracing"
 path = "runtime-tracing.rs"
 
+[[example]]
+name = "flight-recorder"
+path = "flight-recorder.rs"
+
 [lints]
 workspace = true

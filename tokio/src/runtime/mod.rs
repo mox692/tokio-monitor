@@ -363,7 +363,7 @@ cfg_rt! {
 
     cfg_runtime_tracing! {
         mod flight_recorder;
-        pub use flight_recorder::{PerfettoFlightRecorder, FlightRecorder};
+        pub use flight_recorder::{Handle as FlightRecorderHandle};
     }
     mod builder;
     pub use self::builder::Builder;

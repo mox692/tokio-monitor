@@ -1,33 +1,68 @@
-use std::io::Write;
+use std::{io::Write, sync::Arc};
 
 use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
 
+/// A handle to the flight recorder.
+#[derive(Debug, Clone)]
+pub struct Handle {
+    pub(crate) flight_recorder: Arc<PerfettoFlightRecorder>,
+}
+
+impl Handle {
+    /// Create a new flight recorder handle.
+    pub(crate) fn new() -> Self {
+        Self {
+            flight_recorder: Arc::new(PerfettoFlightRecorder::new()),
+        }
+    }
+
+    /// Initialize the flight recorder.
+    pub fn initialize(&self) {
+        self.flight_recorder.initialize();
+    }
+
+    /// Start the flight recorder.
+    pub fn start(&self) {
+        self.flight_recorder.start();
+    }
+
+    /// Stop the flight recorder.
+    pub fn stop(&self) {
+        self.flight_recorder.stop();
+    }
+
+    /// Flush the current trace to the specified writer.
+    pub fn flush_trace<W: Write>(&self, writer: &mut W) {
+        self.flight_recorder.flush_trace(writer);
+    }
+}
+
 /// A trait that represents flight recorder behavior.
-pub trait FlightRecorder {
+pub(crate) trait FlightRecorder {
     /// Initialize flight recorder
-    fn initialize(&mut self);
+    fn initialize(&self);
 
     /// Start flight recorder
-    fn start(&mut self);
+    fn start(&self);
 
     /// Stop flight recorder
-    fn stop(&mut self);
+    fn stop(&self);
 
     /// Flush current buffer content to the specific storage
-    fn flush_trace<W: Write>(&mut self, writer: &mut W);
+    fn flush_trace<W: Write>(&self, writer: &mut W);
 }
 
 // perfetto impl
 
 /// Flight recorder implementation powered by perfetto tracing library.
 #[derive(Debug)]
-pub struct PerfettoFlightRecorder {
+pub(crate) struct PerfettoFlightRecorder {
     config: Config,
 }
 
 impl PerfettoFlightRecorder {
     /// Create a new instance of `PerfettoFlightRecorder`.
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         Self {
             config: Config::default(),
         }
@@ -35,23 +70,23 @@ impl PerfettoFlightRecorder {
 }
 
 impl FlightRecorder for PerfettoFlightRecorder {
-    fn initialize(&mut self) {
-        let config = std::mem::take(&mut self.config);
+    fn initialize(&self) {
+        let config = self.config.clone();
         let consumer = PerfettoReporter::new();
         rt_trace::initialize(config, consumer);
     }
     /// Start flight recorder
-    fn start(&mut self) {
+    fn start(&self) {
         rt_trace::start();
     }
 
     /// Stop flight recorder
-    fn stop(&mut self) {
+    fn stop(&self) {
         rt_trace::stop();
     }
 
     /// Flush current buffer to the specific
-    fn flush_trace<W: Write>(&mut self, writer: &mut W) {
+    fn flush_trace<W: Write>(&self, writer: &mut W) {
         rt_trace::flush(writer);
     }
 }
