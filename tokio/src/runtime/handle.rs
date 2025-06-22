@@ -1,11 +1,6 @@
 #[cfg(tokio_unstable)]
 use crate::runtime;
-#[cfg(all(
-    tokio_unstable,
-    feature = "runtime-tracing",
-    target_os = "linux",
-    target_arch = "x86_64"
-))]
+#[cfg(all(feature = "runtime-tracing"))]
 use crate::runtime::FlightRecorderHandle;
 use crate::runtime::{context, scheduler, RuntimeFlavor, RuntimeMetrics};
 
@@ -410,12 +405,7 @@ impl Handle {
     }
 
     /// Returns a handle to the flight recorder.
-    #[cfg(all(
-        tokio_unstable,
-        feature = "runtime-tracing",
-        target_os = "linux",
-        target_arch = "x86_64"
-    ))]
+    #[cfg(feature = "runtime-tracing")]
     pub fn flihgt_recorder(&self) -> FlightRecorderHandle {
         match &self.inner {
             scheduler::Handle::CurrentThread(_) => {

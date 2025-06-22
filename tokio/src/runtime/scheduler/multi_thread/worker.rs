@@ -300,12 +300,7 @@ pub(super) fn create(
         driver: driver_handle,
         blocking_spawner,
         seed_generator,
-        #[cfg(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ))]
+        #[cfg(feature = "runtime-tracing")]
         flihgt_recorder: crate::runtime::FlightRecorderHandle::new(),
     });
 

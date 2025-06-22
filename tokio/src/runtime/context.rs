@@ -75,8 +75,7 @@ struct Context {
 
     #[allow(unused)]
     #[cfg(all(
-        tokio_unstable,
-        feature = "runtime-tracing",
+        feature = "runtime-tracing-backtrace",
         target_os = "linux",
         target_arch = "x86_64"
     ))]
@@ -128,8 +127,7 @@ tokio_thread_local! {
             trace: trace::Context::new(),
 
             #[cfg(all(
-                tokio_unstable,
-                feature = "runtime-tracing",
+                feature = "runtime-tracing-backtrace",
                 target_os = "linux",
                 target_arch = "x86_64"
             ))]
@@ -216,7 +214,7 @@ cfg_rt! {
     }
 }
 
-cfg_runtime_tracing! {
+cfg_runtime_tracing_backtrace! {
     #[allow(unused)]
     pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
         CONTEXT.try_with(|c| f(&c.backtrace)).ok()

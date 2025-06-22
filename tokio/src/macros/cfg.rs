@@ -514,6 +514,19 @@ macro_rules! cfg_runtime_tracing {
     };
 }
 
+macro_rules! cfg_runtime_tracing_backtrace {
+    ($($item:item)*) => {
+        $(
+            #[cfg(all(
+                feature = "runtime-tracing-backtrace",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
+            $item
+        )*
+    };
+}
+
 macro_rules! runtime_backgrace {
     ($($item:item)*) => {
         $(

@@ -33,12 +33,7 @@ pub(crate) struct Handle {
     /// User-supplied hooks to invoke for things
     pub(crate) task_hooks: TaskHooks,
 
-    #[cfg(all(
-        tokio_unstable,
-        feature = "runtime-tracing",
-        target_os = "linux",
-        target_arch = "x86_64"
-    ))]
+    #[cfg(feature = "runtime-tracing")]
     pub(crate) flihgt_recorder: crate::runtime::FlightRecorderHandle,
 }
 
@@ -73,12 +68,7 @@ impl Handle {
         handle
     }
 
-    #[cfg(all(
-        tokio_unstable,
-        feature = "runtime-tracing",
-        target_os = "linux",
-        target_arch = "x86_64"
-    ))]
+    #[cfg(feature = "runtime-tracing")]
     pub(crate) fn flight_recorder(&self) -> crate::runtime::FlightRecorderHandle {
         self.flihgt_recorder.clone()
     }
