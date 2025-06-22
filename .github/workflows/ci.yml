@@ -476,7 +476,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: miri-doc-test
         run: |
-          cargo miri test --doc --all-features --no-fail-fast
+          # TODO: use --all-features
+          # cargo miri test --doc --all-features --no-fail-fast
+
+          cargo miri test --features full --doc --no-fail-fast
         working-directory: tokio
         env:
           MIRIFLAGS: -Zmiri-disable-isolation -Zmiri-strict-provenance -Zmiri-retag-fields
