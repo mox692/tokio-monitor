@@ -126,7 +126,29 @@ impl Inner {
         if let Some(mut driver) = self.shared.driver.try_lock() {
             self.park_driver(&mut driver, handle);
         } else {
-            self.park_condvar();
+            #[cfg(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            ))]
+            {
+                use rt_trace::span::{self, RuntimePark};
+
+                let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
+
+                self.park_condvar();
+            }
+
+            #[cfg(not(all(
+                tokio_unstable,
+                feature = "runtime-tracing",
+                target_os = "linux",
+                target_arch = "x86_64"
+            )))]
+            {
+                self.park_condvar();
+            }
         }
     }
 

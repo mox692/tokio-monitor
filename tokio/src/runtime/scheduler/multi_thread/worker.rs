@@ -845,37 +845,11 @@ impl Context {
         // Store `core` in context
         *self.core.borrow_mut() = Some(core);
 
-        #[cfg(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        ))]
-        {
-            use rt_trace::span::{self, RuntimePark};
-
-            let _guard = rt_trace::span(span::Type::RuntimePark(RuntimePark {}));
-
-            // Park thread
-            if let Some(timeout) = duration {
-                park.park_timeout(&self.worker.handle.driver, timeout);
-            } else {
-                park.park(&self.worker.handle.driver);
-            }
-        }
-        #[cfg(not(all(
-            tokio_unstable,
-            feature = "runtime-tracing",
-            target_os = "linux",
-            target_arch = "x86_64"
-        )))]
-        {
-            // Park thread
-            if let Some(timeout) = duration {
-                park.park_timeout(&self.worker.handle.driver, timeout);
-            } else {
-                park.park(&self.worker.handle.driver);
-            }
+        // Park thread
+        if let Some(timeout) = duration {
+            park.park_timeout(&self.worker.handle.driver, timeout);
+        } else {
+            park.park(&self.worker.handle.driver);
         }
 
         self.defer.wake();
