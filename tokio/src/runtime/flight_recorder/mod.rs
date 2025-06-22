@@ -1,6 +1,12 @@
-use std::{io::Write, sync::Arc};
+#![cfg(all(
+    tokio_unstable,
+    feature = "runtime-tracing",
+    target_os = "linux",
+    target_arch = "x86_64"
+))]
 
 use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
+use std::{io::Write, sync::Arc};
 
 /// A handle to the flight recorder.
 #[derive(Debug, Clone)]
@@ -10,6 +16,7 @@ pub struct Handle {
 
 impl Handle {
     /// Create a new flight recorder handle.
+    #[allow(unused)]
     pub(crate) fn new() -> Self {
         Self {
             flight_recorder: Arc::new(PerfettoFlightRecorder::new()),
