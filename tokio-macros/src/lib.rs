@@ -598,8 +598,7 @@ pub fn trace_on_pending_backtrace(_attr: TokenStream, item: TokenStream) -> Toke
             let output = (|| #body)();
             if let Poll::Pending = output {
                 #[cfg(all(
-                    tokio_unstable,
-                    feature = "runtime-tracing",
+                    feature = "runtime-tracing-backtrace",
                     target_os = "linux",
                     target_arch = "x86_64"
                 ))]

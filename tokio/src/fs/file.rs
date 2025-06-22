@@ -583,8 +583,7 @@ impl File {
 impl AsyncRead for File {
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -698,8 +697,7 @@ impl AsyncSeek for File {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -740,8 +738,7 @@ impl AsyncSeek for File {
 impl AsyncWrite for File {
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -821,8 +818,7 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -906,8 +902,7 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -922,8 +917,7 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -1008,8 +1002,7 @@ impl Inner {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"

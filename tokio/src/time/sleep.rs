@@ -398,8 +398,7 @@ impl Sleep {
 
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
