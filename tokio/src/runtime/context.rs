@@ -214,12 +214,11 @@ cfg_rt! {
             CONTEXT.try_with(|c| f(&c.trace)).ok()
         }
     }
+}
 
-    cfg_runtime_tracing! {
-        #[allow(unused)]
-        pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
-            CONTEXT.try_with(|c| f(&c.backtrace)).ok()
-        }
+cfg_runtime_tracing! {
+    #[allow(unused)]
+    pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
+        CONTEXT.try_with(|c| f(&c.backtrace)).ok()
     }
-
 }

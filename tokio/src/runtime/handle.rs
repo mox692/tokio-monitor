@@ -1,5 +1,12 @@
 #[cfg(tokio_unstable)]
 use crate::runtime;
+#[cfg(all(
+    tokio_unstable,
+    feature = "runtime-tracing",
+    target_os = "linux",
+    target_arch = "x86_64"
+))]
+use crate::runtime::FlightRecorderHandle;
 use crate::runtime::{context, scheduler, RuntimeFlavor, RuntimeMetrics};
 
 /// Handle to the runtime.
@@ -399,6 +406,23 @@ impl Handle {
             scheduler::Handle::CurrentThread(_) => RuntimeFlavor::CurrentThread,
             #[cfg(feature = "rt-multi-thread")]
             scheduler::Handle::MultiThread(_) => RuntimeFlavor::MultiThread,
+        }
+    }
+
+    /// Returns a handle to the flight recorder.
+    #[cfg(all(
+        tokio_unstable,
+        feature = "runtime-tracing",
+        target_os = "linux",
+        target_arch = "x86_64"
+    ))]
+    pub fn flihgt_recorder(&self) -> FlightRecorderHandle {
+        match &self.inner {
+            scheduler::Handle::CurrentThread(_) => {
+                unimplemented!("Flight recorder is not supported in current_thread runtime")
+            }
+            #[cfg(feature = "rt-multi-thread")]
+            scheduler::Handle::MultiThread(handle) => handle.flight_recorder(),
         }
     }
 

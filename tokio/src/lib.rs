@@ -654,6 +654,12 @@ cfg_macros! {
 
     #[doc(hidden)]
     #[allow(unused)]
+    #[cfg(all(
+        tokio_unstable,
+        feature = "runtime-tracing",
+        target_os = "linux",
+        target_arch = "x86_64"
+    ))]
     pub(crate) use tokio_macros::trace_on_pending_backtrace;
 
     /// Implementation detail of the `select!` macro. This macro is **not**
