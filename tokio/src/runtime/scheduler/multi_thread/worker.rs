@@ -573,9 +573,34 @@ impl Context {
             }
         }
 
-        core.pre_shutdown(&self.worker);
-        // Signal shutdown
-        self.worker.handle.shutdown_core(core);
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
+        {
+            use rt_trace::span::{self, RuntimeTerminate};
+
+            // TODO: gather backtarce with `with_backtrace`.
+            let _guard = rt_trace::span(span::Type::RuntimeTerminate(RuntimeTerminate {}));
+
+            core.pre_shutdown(&self.worker);
+            // Signal shutdown
+            self.worker.handle.shutdown_core(core);
+        }
+        #[cfg(not(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        )))]
+        {
+            core.pre_shutdown(&self.worker);
+            // Signal shutdown
+            self.worker.handle.shutdown_core(core);
+        }
+
         Err(())
     }
 

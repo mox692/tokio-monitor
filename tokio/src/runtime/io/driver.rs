@@ -158,17 +158,44 @@ impl Driver {
 
         let events = &mut self.events;
 
-        // Block waiting for an event to happen, peeling out how many events
-        // happened.
-        match self.poll.poll(events, max_wait) {
-            Ok(()) => {}
-            Err(ref e) if e.kind() == io::ErrorKind::Interrupted => {}
-            #[cfg(target_os = "wasi")]
-            Err(e) if e.kind() == io::ErrorKind::InvalidInput => {
-                // In case of wasm32_wasi this error happens, when trying to poll without subscriptions
-                // just return from the park, as there would be nothing, which wakes us up.
+        let mut epoll_wait = || {
+            // Block waiting for an event to happen, peeling out how many events
+            // happened.
+            match self.poll.poll(events, max_wait) {
+                Ok(()) => {}
+                Err(ref e) if e.kind() == io::ErrorKind::Interrupted => {}
+                #[cfg(target_os = "wasi")]
+                Err(e) if e.kind() == io::ErrorKind::InvalidInput => {
+                    // In case of wasm32_wasi this error happens, when trying to poll without subscriptions
+                    // just return from the park, as there would be nothing, which wakes us up.
+                }
+                Err(e) => panic!("unexpected error when polling the I/O driver: {e:?}"),
             }
-            Err(e) => panic!("unexpected error when polling the I/O driver: {e:?}"),
+        };
+
+        #[cfg(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        ))]
+        {
+            use rt_trace::span::{self, RuntimeDriver};
+            let _guard = rt_trace::span(span::Type::RuntimeDriver(RuntimeDriver {}));
+
+            epoll_wait();
+        }
+
+        #[cfg(not(all(
+            tokio_unstable,
+            feature = "runtime-tracing",
+            target_os = "linux",
+            target_arch = "x86_64"
+        )))]
+        {
+            // Block waiting for an event to happen, peeling out how many events
+            // happened.
+            epoll_wait();
         }
 
         // Process all the events that came in, dispatching appropriately
