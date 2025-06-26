@@ -618,13 +618,21 @@ impl Context {
             {
                 use rt_trace::span::{self, RunTask};
 
-                // TODO: gather backtarce with `with_backtrace`.
-                let _guard = rt_trace::span(span::Type::RunTask(RunTask {
+                let mut _guard = rt_trace::span(span::Type::RunTask(RunTask {
                     name: Some("task1".to_string()),
                     ..Default::default()
                 }));
 
                 task.run();
+
+                #[cfg(feature = "runtime-tracing-backtrace")]
+                {
+                    let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
+                        .flatten()
+                        .unwrap_or_default();
+
+                    _guard.set_backtrace(backtrace);
+                }
             }
 
             #[cfg(not(feature = "runtime-tracing"))]
@@ -708,12 +716,21 @@ impl Context {
                 {
                     use rt_trace::span::{self, RunTask};
 
-                    // TODO: gather backtarce with `with_backtrace`.
-                    let _guard = rt_trace::span(span::Type::RunTask(RunTask {
+                    let mut _guard = rt_trace::span(span::Type::RunTask(RunTask {
                         name: Some("task1".to_string()),
                         ..Default::default()
                     }));
+
                     task.run();
+
+                    #[cfg(feature = "runtime-tracing-backtrace")]
+                    {
+                        let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
+                            .flatten()
+                            .unwrap_or_default();
+
+                        _guard.set_backtrace(backtrace);
+                    }
                 }
 
                 #[cfg(not(feature = "runtime-tracing"))]
