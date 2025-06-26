@@ -1,4 +1,3 @@
-#[cfg(all(tokio_unstable, target_os = "linux", target_arch = "x86_64"))]
 fn main() {
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -10,7 +9,6 @@ fn main() {
     });
 }
 
-#[cfg(all(tokio_unstable, target_os = "linux", target_arch = "x86_64"))]
 async fn run() {
     // Initialize the flight recorder
 
@@ -37,6 +35,3 @@ async fn run() {
     let mut file = std::fs::File::create("./test.pftrace").unwrap();
     flight_recorder.flush_trace(&mut file);
 }
-
-#[cfg(not(all(tokio_unstable, target_os = "linux", target_arch = "x86_64")))]
-fn main() {}

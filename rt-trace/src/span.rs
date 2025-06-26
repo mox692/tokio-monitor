@@ -81,6 +81,16 @@ pub struct Span {
     pub(crate) span_queue_handle: Arc<Mutex<SpanQueue>>,
 }
 
+impl Span {
+    pub fn set_backtrace(&mut self, backtrace: String) {
+        if let Some(inner) = &mut self.inner {
+            if let Type::RunTask(ref mut run_task) = inner.typ {
+                run_task.backtrace = Some(backtrace);
+            }
+        }
+    }
+}
+
 impl Drop for Span {
     #[inline]
     fn drop(&mut self) {
