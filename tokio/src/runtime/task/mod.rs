@@ -464,12 +464,7 @@ impl<S: Schedule> LocalNotified<S> {
     }
 
     #[allow(dead_code)]
-    #[cfg(all(
-        tokio_unstable,
-        feature = "runtime-tracing",
-        target_os = "linux",
-        target_arch = "x86_64"
-    ))]
+    #[cfg(feature = "runtime-tracing")]
     pub(crate) fn id(&self) -> Id {
         unsafe { Header::get_id(self.task.header_ptr()) }
     }

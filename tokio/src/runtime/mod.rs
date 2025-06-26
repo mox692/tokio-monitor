@@ -365,6 +365,7 @@ cfg_rt! {
         mod flight_recorder;
         pub use flight_recorder::{Handle as FlightRecorderHandle};
     }
+
     mod builder;
     pub use self::builder::Builder;
     cfg_unstable! {

@@ -1,9 +1,4 @@
-#![cfg(all(
-    tokio_unstable,
-    feature = "runtime-tracing",
-    target_os = "linux",
-    target_arch = "x86_64"
-))]
+#![cfg(feature = "runtime-tracing")]
 
 use rt_trace::{backend::perfetto::PerfettoReporter, config::Config};
 use std::{io::Write, sync::Arc};

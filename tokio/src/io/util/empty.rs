@@ -68,8 +68,7 @@ impl AsyncRead for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -103,8 +102,7 @@ impl AsyncWrite for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -124,8 +122,7 @@ impl AsyncWrite for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -141,8 +138,7 @@ impl AsyncWrite for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -163,8 +159,7 @@ impl AsyncWrite for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
@@ -192,8 +187,7 @@ impl AsyncSeek for Empty {
     #[inline]
     #[cfg_attr(
         all(
-            tokio_unstable,
-            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
             feature = "macros",
             target_os = "linux",
             target_arch = "x86_64"
