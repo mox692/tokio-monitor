@@ -20,7 +20,7 @@ jobs:
         uses: taiki-e/install-action@valgrind
       - run: rustup toolchain update nightly && rustup default nightly
       - run: cargo install --version 0.14.2 iai-callgrind-runner
-      - name: Run walltime benchmark 
+      - name: Run walltime benchmark
         run: cargo bench --bench flight_record -- --output-format bencher | tee output.txt
       - name: Download previous benchmark data
         uses: actions/cache@v4
@@ -34,7 +34,7 @@ jobs:
           name: Rust Benchmark
           tool: 'cargo'
           output-file-path: output.txt
-          auto-push: true 
+          auto-push: true
           comment-always: true
           gh-pages-branch: gh-pages
           alert-threshold: '200%'

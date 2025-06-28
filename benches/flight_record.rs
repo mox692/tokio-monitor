@@ -46,7 +46,7 @@ fn spawn_many_tasks(g: &mut BenchmarkGroup<WallTime>, enable: bool, flush: bool)
 
                 let start = Instant::now();
                 for _ in 0..iters {
-                    for i in 0..NUM_SPAWN {
+                    for _i in 0..NUM_SPAWN {
                         tracker.spawn(async move {});
                     }
                     tracker.close();
