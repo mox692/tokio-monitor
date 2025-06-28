@@ -93,4 +93,23 @@ impl FlightRecorder for PerfettoFlightRecorder {
     }
 }
 
-// fastrace impl (TODO)
+/// Start initialize recorder
+pub fn initialise() {
+    let consumer = PerfettoReporter::new();
+    rt_trace::initialize(Config::default(), consumer);
+}
+
+/// Start flight recorder
+pub fn start(&self) {
+    rt_trace::start();
+}
+
+/// Stop flight recorder
+pub fn stop(&self) {
+    rt_trace::stop();
+}
+
+/// Flush current buffer to the specific
+pub fn flush_trace<W: Write>(&self, writer: &mut W) {
+    rt_trace::flush(writer);
+}

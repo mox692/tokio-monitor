@@ -1,7 +1,7 @@
 use std::time::Duration;
 
 #[derive(Default, Debug, Clone)]
-pub struct Config {
+pub(crate) struct Config {
     pub(crate) consumer_thread_sleep_duration: Option<Duration>,
     pub(crate) num_shard: Option<usize>,
 }
