@@ -100,16 +100,16 @@ pub fn initialise() {
 }
 
 /// Start flight recorder
-pub fn start(&self) {
+pub fn start() {
     rt_trace::start();
 }
 
 /// Stop flight recorder
-pub fn stop(&self) {
+pub fn stop() {
     rt_trace::stop();
 }
 
 /// Flush current buffer to the specific
-pub fn flush_trace<W: Write>(&self, writer: &mut W) {
+pub fn flush_trace<W: Write>(writer: &mut W) {
     rt_trace::flush(writer);
 }
