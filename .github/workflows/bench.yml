@@ -1,0 +1,43 @@
+name: flight_record_bench
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+
+jobs:
+  benchmark:
+    name: Run benchmark
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Swatinem/rust-cache@v2
+      - name: Install Valgrind
+        uses: taiki-e/install-action@valgrind
+      - run: rustup toolchain update nightly && rustup default nightly
+      - run: cargo install --version 0.14.2 iai-callgrind-runner
+      - name: Run walltime benchmark
+        run: cargo bench --bench flight_record -- --output-format bencher | tee output.txt
+      - name: Download previous benchmark data
+        uses: actions/cache@v4
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Rust Benchmark
+          tool: 'cargo'
+          output-file-path: output.txt
+          auto-push: true
+          comment-always: true
+          gh-pages-branch: gh-pages
+          alert-threshold: '200%'
+          comment-on-alert: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          fail-on-alert: true
