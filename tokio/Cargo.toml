@@ -38,7 +38,7 @@ full = [
   "rt-multi-thread",
   "signal",
   "sync",
-  "time",
+  "time"
 ]
 
 fs = []
@@ -105,7 +105,7 @@ socket2 = { version = "0.5.5", optional = true, features = ["all"] }
 # Requires `--cfg tokio_unstable` to enable.
 [target.'cfg(tokio_unstable)'.dependencies]
 tracing = { version = "0.1.29", default-features = false, features = ["std"], optional = true } # Not in full
-[target.'cfg(all(target_arch = "x86_64", target_os = "linux"))'.dependencies]
+[target.'cfg(target_arch = "x86_64")'.dependencies]
 hopframe = { path = "../hopframe", optional = true }
 
 [target.'cfg(all(tokio_uring, target_os = "linux"))'.dependencies]
