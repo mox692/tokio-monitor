@@ -1,79 +1,82 @@
 use std::fs::File;
 use std::time::Instant;
 
-/// # 比較
-/// * rt-trace をONにしてる時と, offにしてる時の比較
-/// * backtraceをONにしてる時と, offにしてる時の比較
-/// * flushを定期的にするパターンとi, しないパターン
-///
-/// # コード
-/// * ケース1: 小さいタスクを大量にspawnするケース
-///     * ランダムなyield
-/// * ケース2: 少量のtaskをspawnするケース
-/// * ケース3: 実際のアプリケーションでの比較 (lodeoとか使っていいかなw)
-use criterion::criterion_group;
-use criterion::criterion_main;
-use criterion::measurement::WallTime;
-use criterion::BenchmarkGroup;
-use criterion::Criterion;
-use tokio::runtime::Handle;
+use criterion::{
+    criterion_group, criterion_main, measurement::WallTime, BenchmarkGroup, Criterion,
+};
+use tokio::runtime::{Builder, Handle};
+use tokio_util::task::TaskTracker;
 
 const NUM_SPAWN: usize = 1000;
 
-fn spawn_many_tasks(g: &mut BenchmarkGroup<WallTime>, enable: bool, flush: bool) {
-    use tokio_util::task::TaskTracker;
-
-    let rt = tokio::runtime::Builder::new_multi_thread()
+/// Benchmark Overview:
+/// * Compare runtime tracing enabled vs. disabled.
+/// * Compare backtrace enabled vs. disabled.
+/// * Compare periodic flush patterns vs. no flush.
+///
+/// Variants:
+/// 1. Spawn many small tasks with random yields.
+/// 2. Spawn a few tasks.
+/// 3. Real-world application comparison (e.g., using lodeo).
+fn spawn_tasks(group: &mut BenchmarkGroup<WallTime>, trace_enabled: bool, periodic_flush: bool) {
+    // Build a multi-threaded Tokio runtime with all features enabled.
+    let runtime = Builder::new_multi_thread()
         .enable_all()
         .build()
-        .unwrap();
+        .expect("Failed to build Tokio runtime");
 
-    let name = format!(
-        "spawn_{NUM_SPAWN}_tasks - enable: {}, flush: {}",
-        enable, flush
+    // Create a descriptive name for this benchmark configuration.
+    let bench_name = format!(
+        "spawn_{}_tasks - trace: {}, flush: {}",
+        NUM_SPAWN, trace_enabled, periodic_flush
     );
 
-    g.bench_function(name, |b| {
-        b.iter_custom(|iters| {
-            rt.block_on(async {
-                let flight_recorder = Handle::current().flihgt_recorder();
-                let mut file = File::create("./test.pftrace").unwrap();
-                flight_recorder.initialize();
-                if enable {
-                    flight_recorder.start();
-                }
-                let tracker = TaskTracker::new();
+    group.bench_function(&bench_name, |bencher| {
+        bencher.iter_custom(|iterations| {
+            runtime.block_on(async {
+                // Obtain the flight recorder from the current runtime handle.
+                let recorder = Handle::current().flight_recorder();
+                let mut trace_file =
+                    File::create("test.pftrace").expect("Unable to create trace file");
 
-                let start = Instant::now();
-                for _ in 0..iters {
-                    for _i in 0..NUM_SPAWN {
-                        tracker.spawn(async move {});
+                recorder.initialize();
+                if trace_enabled {
+                    recorder.start();
+                }
+
+                let tracker = TaskTracker::new();
+                let start_time = Instant::now();
+
+                for _ in 0..iterations {
+                    for _ in 0..NUM_SPAWN {
+                        tracker.spawn(async {});
                     }
                     tracker.close();
                     tracker.wait().await;
-                    if flush {
-                        flight_recorder.flush_trace(&mut file);
+
+                    if periodic_flush {
+                        recorder.flush_trace(&mut trace_file);
                     }
                 }
 
-                let dur = start.elapsed();
-                dur
+                start_time.elapsed()
             })
         })
     });
 }
 
-fn perfetto(c: &mut Criterion) {
-    let mut bgroup = c.benchmark_group("flight_record");
+/// Defines and runs benchmarks for different combinations of tracing and flushing.
+fn perfetto_benchmarks(criterion: &mut Criterion) {
+    let mut group = criterion.benchmark_group("flight_record");
 
-    for enable in [true, false] {
-        for flush in [true, false] {
-            spawn_many_tasks(&mut bgroup, enable, flush);
+    for &trace_enabled in &[true, false] {
+        for &periodic_flush in &[true, false] {
+            spawn_tasks(&mut group, trace_enabled, periodic_flush);
         }
     }
 
-    bgroup.finish();
+    group.finish();
 }
 
-criterion_group!(benches, perfetto);
+criterion_group!(benches, perfetto_benchmarks);
 criterion_main!(benches);

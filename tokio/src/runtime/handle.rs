@@ -406,7 +406,7 @@ impl Handle {
 
     /// Returns a handle to the flight recorder.
     #[cfg(feature = "runtime-tracing")]
-    pub fn flihgt_recorder(&self) -> FlightRecorderHandle {
+    pub fn flight_recorder(&self) -> FlightRecorderHandle {
         match &self.inner {
             scheduler::Handle::CurrentThread(_) => {
                 unimplemented!("Flight recorder is not supported in current_thread runtime")
