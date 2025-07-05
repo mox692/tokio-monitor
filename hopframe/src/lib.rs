@@ -8,5 +8,5 @@
 // #[cfg(feature = "symbolize")]
 // pub mod symbolize;
 
-#[cfg(all(target_arch = "x86_64", target_os = "linux"))]
+#[cfg(target_arch = "x86_64")]
 pub mod unwinder;
