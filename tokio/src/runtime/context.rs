@@ -219,4 +219,8 @@ cfg_runtime_tracing_backtrace! {
     pub(crate) fn with_backtrace<R>(f: impl FnOnce(&Cell<Option<String>>) -> R) -> Option<R> {
         CONTEXT.try_with(|c| f(&c.backtrace)).ok()
     }
+
+    pub(crate) fn with_backtrace2<R>(f: impl FnOnce(Option<String>) -> R) -> Option<R> {
+        CONTEXT.try_with(|c| f(c.backtrace.take())).ok()
+    }
 }
