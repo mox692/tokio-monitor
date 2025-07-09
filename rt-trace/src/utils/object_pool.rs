@@ -42,7 +42,7 @@ impl<T> Pool<T> {
     }
 
     /// Actually allocate a new heap memory (`buffer_size` * T).
-    pub fn puller(&self, buffer_size: usize) -> Puller<T> {
+    pub fn puller(&self, buffer_size: usize) -> Puller<'_, T> {
         assert!(buffer_size > 0);
         Puller {
             pool: self,

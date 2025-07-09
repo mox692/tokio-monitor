@@ -189,10 +189,10 @@ cfg_trace! {
 cfg_runtime_tracing_backtrace! {
     #[allow(unused)]
     pub(crate) fn gen_backtrace() -> String {
-        use hopframe::unwinder::UnwindBuilderX86_64;
+        use hopframe::unwinder::UnwindBuilder;
         use std::fmt::Write;
 
-        let mut unwinder = UnwindBuilderX86_64::new().build();
+        let mut unwinder = UnwindBuilder::new().build();
         unwinder
             .unwind()
             .fold(String::new(), |mut acc, frame| {

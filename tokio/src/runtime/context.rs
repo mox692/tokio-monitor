@@ -75,9 +75,9 @@ struct Context {
 
     #[allow(unused)]
     #[cfg(all(
+        feature = "runtime-tracing",
         feature = "runtime-tracing-backtrace",
-        target_os = "linux",
-        target_arch = "x86_64"
+        any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
     ))]
     backtrace: Cell<Option<String>>,
 }
@@ -127,9 +127,9 @@ tokio_thread_local! {
             trace: trace::Context::new(),
 
             #[cfg(all(
+                feature = "runtime-tracing",
                 feature = "runtime-tracing-backtrace",
-                target_os = "linux",
-                target_arch = "x86_64"
+                any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
             ))]
             backtrace: Cell::new(None)
         }
