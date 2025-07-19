@@ -625,7 +625,10 @@ impl Context {
 
                 task.run();
 
-                #[cfg(feature = "runtime-tracing-backtrace")]
+                #[cfg(all(
+                    feature = "runtime-tracing-backtrace",
+                    any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
+                ))]
                 {
                     let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
                         .flatten()
@@ -723,7 +726,10 @@ impl Context {
 
                     task.run();
 
-                    #[cfg(feature = "runtime-tracing-backtrace")]
+                    #[cfg(all(
+                        feature = "runtime-tracing-backtrace",
+                        any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
+                    ))]
                     {
                         let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
                             .flatten()
