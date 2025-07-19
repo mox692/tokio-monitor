@@ -583,10 +583,9 @@ impl File {
 impl AsyncRead for File {
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -697,10 +696,9 @@ impl AsyncSeek for File {
 
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -738,10 +736,9 @@ impl AsyncSeek for File {
 impl AsyncWrite for File {
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -818,10 +815,9 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -902,10 +898,9 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -917,10 +912,9 @@ impl AsyncWrite for File {
 
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -1002,10 +996,9 @@ impl Inner {
 
     #[cfg_attr(
         all(
+            feature = "runtime-tracing",
             feature = "runtime-tracing-backtrace",
-            feature = "macros",
-            target_os = "linux",
-            target_arch = "x86_64"
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]

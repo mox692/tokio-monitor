@@ -133,3 +133,5 @@
 //     unwind_framehop
 // );
 // criterion_main!(framehop_vs_backtrace);
+
+fn main() {}
