@@ -287,13 +287,10 @@ impl<T, S: Semaphore> Rx<T, S> {
 
     /// Receive the next value
     #[cfg_attr(
-        any(
-            all(
-                feature = "runtime-tracing-backtrace",
-                target_arch = "x86_64",
-                target_os = "linux"
-            ),
-            target_os = "macos"
+        all(
+            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
@@ -355,13 +352,10 @@ impl<T, S: Semaphore> Rx<T, S> {
     /// For `limit > 0`, receives up to limit values into `buffer`.
     /// For `limit == 0`, immediately returns Ready(0).
     #[cfg_attr(
-        any(
-            all(
-                feature = "runtime-tracing-backtrace",
-                target_arch = "x86_64",
-                target_os = "linux"
-            ),
-            target_os = "macos"
+        all(
+            feature = "runtime-tracing",
+            feature = "runtime-tracing-backtrace",
+            any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"),
         ),
         crate::trace_on_pending_backtrace
     )]
