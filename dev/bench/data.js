@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1751715058784,
+  "lastUpdate": 1752912354427,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -175,6 +175,54 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 722066,
             "range": "± 57089",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "moymoymox@gmail.com",
+            "name": "Motoyuki Kimura",
+            "username": "mox692"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "7765d720d1a9ffea66af33ea0e69c559d9d52c4b",
+          "message": "add bench (#29)",
+          "timestamp": "2025-07-19T16:49:32+09:00",
+          "tree_id": "aa47c0906231b6500b45e01605fa06e94cefe597",
+          "url": "https://github.com/mox692/tokio-monitor/commit/7765d720d1a9ffea66af33ea0e69c559d9d52c4b"
+        },
+        "date": 1752912352398,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2075172,
+            "range": "± 133351",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 682785,
+            "range": "± 43918",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2187867,
+            "range": "± 78110",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 721351,
+            "range": "± 46352",
             "unit": "ns/iter"
           }
         ]
