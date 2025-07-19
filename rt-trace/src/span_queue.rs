@@ -25,9 +25,12 @@ pub(crate) static DESCRIPTORS: Lazy<Arc<Mutex<HashMap<RawSpan, bool>>>> =
 pub(crate) fn add_descriptor(span: RawSpan) {
     let mut guard = DESCRIPTORS.lock();
 
-    if guard.get(&span).is_some() {
-        panic!("Descriptor already exists for span: {:?}", span);
-    }
+    // TODO: remove debug_aasert?
+    debug_assert!(
+        guard.get(&span).is_none(),
+        "Descriptor already exists for span: {:?}",
+        span
+    );
 
     guard.insert(span, false);
 }
