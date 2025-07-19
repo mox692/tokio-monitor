@@ -654,10 +654,13 @@ cfg_macros! {
 
     #[doc(hidden)]
     #[allow(unused)]
-    #[cfg(all(
-        feature = "runtime-tracing-backtrace",
-        target_os = "linux",
-        target_arch = "x86_64"
+    #[cfg(any(
+        all(
+            feature = "runtime-tracing-backtrace",
+            target_arch = "x86_64",
+            target_os = "linux"
+        ),
+        target_os = "macos"
     ))]
     pub(crate) use tokio_macros::trace_on_pending_backtrace;
 
