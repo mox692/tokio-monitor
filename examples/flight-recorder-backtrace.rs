@@ -1,4 +1,4 @@
-#[cfg(all(target_os = "linux", target_arch = "x86_64"))]
+#[cfg(any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"))]
 fn main() {
     use std::{
         fs::File,
@@ -40,7 +40,7 @@ fn main() {
         .unwrap();
 
     rt.block_on(async {
-        let flight_recorder = tokio::runtime::Handle::current().flihgt_recorder();
+        let flight_recorder = tokio::runtime::Handle::current().flight_recorder();
         flight_recorder.initialize();
         flight_recorder.start();
         tokio::spawn(async { foo().await }).await.unwrap();
@@ -52,5 +52,5 @@ fn main() {
     drop(rt);
 }
 
-#[cfg(not(all(target_os = "linux", target_arch = "x86_64")))]
+#[cfg(not(any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos")))]
 fn main() {}
