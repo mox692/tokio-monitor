@@ -630,9 +630,9 @@ impl Context {
                     any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
                 ))]
                 {
-                    let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
-                        .flatten()
-                        .unwrap_or_default();
+                    let backtrace = crate::runtime::context::with_backtrace(|trace| {
+                        trace.take().unwrap_or_default()
+                    });
 
                     _guard.set_backtrace(backtrace);
                 }
@@ -731,9 +731,9 @@ impl Context {
                         any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
                     ))]
                     {
-                        let backtrace = crate::runtime::context::with_backtrace2(|trace| trace)
-                            .flatten()
-                            .unwrap_or_default();
+                        let backtrace = crate::runtime::context::with_backtrace(|trace| {
+                            trace.take().unwrap_or_default()
+                        });
 
                         _guard.set_backtrace(backtrace);
                     }
