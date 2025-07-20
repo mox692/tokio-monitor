@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1753002940718,
+  "lastUpdate": 1753004134157,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -491,6 +491,50 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 720154,
             "range": "± 55047",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "mox692",
+            "username": "mox692"
+          },
+          "committer": {
+            "name": "mox692",
+            "username": "mox692"
+          },
+          "id": "a3b00ff217cb03eef1d994de467cb967108a4f04",
+          "message": "Add minimum backtrace support",
+          "timestamp": "2025-07-19T08:37:23Z",
+          "url": "https://github.com/mox692/tokio-monitor/pull/27/commits/a3b00ff217cb03eef1d994de467cb967108a4f04"
+        },
+        "date": 1753004132104,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2201020,
+            "range": "± 60331",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 641576,
+            "range": "± 62021",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2303425,
+            "range": "± 80967",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 718247,
+            "range": "± 48624",
             "unit": "ns/iter"
           }
         ]
