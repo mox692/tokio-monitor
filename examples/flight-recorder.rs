@@ -12,7 +12,7 @@ fn main() {
 async fn run() {
     // Initialize the flight recorder
 
-    let flight_recorder = tokio::runtime::Handle::current().flihgt_recorder();
+    let flight_recorder = tokio::runtime::Handle::current().flight_recorder();
 
     flight_recorder.initialize();
     flight_recorder.start();

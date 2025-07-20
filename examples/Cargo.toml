@@ -107,9 +107,5 @@ path = "runtime-tracing.rs"
 name = "flight-recorder"
 path = "flight-recorder.rs"
 
-[[example]]
-name = "backtrace"
-path = "backtrace.rs"
-
 [lints]
 workspace = true
