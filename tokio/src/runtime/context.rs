@@ -220,6 +220,7 @@ cfg_runtime_tracing_backtrace! {
         CONTEXT.try_with(|c| f(&c.backtrace)).ok()
     }
 
+    #[allow(unused)]
     pub(crate) fn with_backtrace2<R>(f: impl FnOnce(Option<String>) -> R) -> Option<R> {
         CONTEXT.try_with(|c| f(c.backtrace.take())).ok()
     }
