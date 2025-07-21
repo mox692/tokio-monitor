@@ -15,10 +15,19 @@ fn main() {
     }
     #[inline(never)]
     async fn baz() {
+        let num_iter = 10000;
         let mut handles = vec![];
-        for i in 0..10 {
+        let (tx, mut rx) = tokio::sync::mpsc::channel(1);
+        handles.push(tokio::task::spawn(async move {
+            for _ in 0..num_iter {
+                rx.recv().await.unwrap();
+            }
+        }));
+        for _ in 0..num_iter {
+            let tx = tx.clone();
             handles.push(tokio::task::spawn(async move {
-                tokio::time::sleep(std::time::Duration::from_micros(i * 10)).await;
+                tx.send(()).await.unwrap();
+                tokio::task::yield_now().await;
             }));
         }
 
