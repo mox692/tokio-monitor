@@ -82,16 +82,24 @@ impl PerfettoReporter {
 
 /// Docs: https://perfetto.dev/docs/reference/trace-packet-proto#DebugAnnotation
 #[inline]
-fn create_debug_annotations() -> Vec<DebugAnnotation> {
-    // TODO: use object pool to reduce the number of allocations.
-    let mut debug_annotation = DebugAnnotation::default();
-    let name_field = debug_annotation::NameField::Name("key1".to_string());
-    let value = Value::StringValue("value1".to_string());
-    debug_annotation.name_field = Some(name_field);
-    debug_annotation.value = Some(value);
+fn create_debug_annotations(span: &RawSpan) -> Vec<DebugAnnotation> {
+    let mut annotations = Vec::new();
 
-    // TODO: avoid allocation
-    vec![debug_annotation]
+    // Check if this is a RunTask span with a backtrace
+    if let Type::RunTask(run_task) = &span.typ {
+        if let Some(backtrace) = &run_task.backtrace {
+            let mut debug_annotation = DebugAnnotation::default();
+            // TODO: remove allocation
+            let name_field = debug_annotation::NameField::Name("backtrace".to_string());
+            // TODO: remove allocation
+            let value = Value::StringValue(backtrace.clone());
+            debug_annotation.name_field = Some(name_field);
+            debug_annotation.value = Some(value);
+            annotations.push(debug_annotation);
+        }
+    }
+
+    annotations
 }
 
 /// Docs: https://perfetto.dev/docs/reference/trace-packet-proto#TrackEvent
@@ -265,7 +273,7 @@ impl SpanConsumer for PerfettoReporter {
                 | Type::RuntimeDriver(_)
                 | Type::RuntimeTerminate(_) => {
                     // Start event packet
-                    let debug_annotations = create_debug_annotations();
+                    let debug_annotations = create_debug_annotations(span);
                     let start_event = create_track_event(
                         Some(span.typ.type_name_string()),
                         span.thread_id,
@@ -281,7 +289,7 @@ impl SpanConsumer for PerfettoReporter {
                     let packet = unsafe { packets.get_unchecked_mut(num_packets) };
 
                     // End event packet
-                    let debug_annotations = create_debug_annotations();
+                    let debug_annotations = create_debug_annotations(span);
                     let end_event = create_track_event(
                         None,
                         span.thread_id,
