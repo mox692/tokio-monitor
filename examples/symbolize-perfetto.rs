@@ -2,7 +2,15 @@
 // backtraces found in the trace data. This is useful for analyzing runtime traces
 // from tokio-monitor that include backtrace information.
 //
-// Usage: cargo run --example symbolize-perfetto <trace_file.pftrace>
+// # Usage
+//
+// ```bash
+// $ cargo run --package examples --example flight-recorder-backtrace
+//
+// $ cargo run --package examples --example symbolize-perfetto -- ./test.pftrace 47366144 ./target/debug/examples/flight-recorder-backtrace
+// ```
+//
+//
 
 use hopframe::symbolize::{read_aslr_offset, LookupAddress, SymbolMapBuilder};
 use prost::Message;
@@ -25,9 +33,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let filename = &args[1];
-    let aslr_offset = &args[2];
-    let bin_file = &args[3];
-    let aslr_offset: u64 = aslr_offset.parse().unwrap();
+    let bin_file = &args[2];
 
     // Read the Perfetto binary file
     let mut file = File::open(filename)?;
@@ -36,16 +42,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Build the symbol map for address symbolization
     let bin_file = Path::new(bin_file);
-    println!(
-        "Building symbol map..., bin_file = {:?}, offset: {}",
-        bin_file, aslr_offset
-    );
 
     let symbol_map = SymbolMapBuilder::new()
         .with_binary_path(Path::new(bin_file))
         .build()
         .await;
-    // println!("ASLR offset: {:?}", aslr_offset);
 
     // Parse Perfetto trace packets
     let mut offset = 0;
@@ -65,7 +66,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
         // Process the packet if it contains track events
         if let Some(trace_packet::Data::TrackEvent(track_event)) = packet.data {
-            process_track_event(&track_event, &symbol_map, aslr_offset).await;
+            process_track_event(&track_event, &symbol_map).await;
         }
     }
 
@@ -113,7 +114,6 @@ fn decode_varint(buffer: &[u8]) -> Result<(usize, usize), Box<dyn std::error::Er
 async fn process_track_event(
     track_event: &TrackEvent,
     symbol_map: &hopframe::symbolize::SymbolMap,
-    aslr_offset: u64,
 ) {
     // Check debug annotations for backtraces
     for annotation in &track_event.debug_annotations {
@@ -121,7 +121,7 @@ async fn process_track_event(
             if name == "backtrace" {
                 if let Some(backtrace_str) = get_annotation_string_value(annotation) {
                     if !backtrace_str.is_empty() {
-                        symbolize_backtrace(&backtrace_str, symbol_map, aslr_offset).await;
+                        symbolize_backtrace(&backtrace_str, symbol_map).await;
                     }
                 }
             }
@@ -154,25 +154,13 @@ fn get_annotation_string_value(annotation: &DebugAnnotation) -> Option<String> {
 }
 
 // Symbolize a backtrace string
-async fn symbolize_backtrace(
-    backtrace_str: &str,
-    symbol_map: &hopframe::symbolize::SymbolMap,
-    aslr_offset: u64,
-) {
+async fn symbolize_backtrace(backtrace_str: &str, symbol_map: &hopframe::symbolize::SymbolMap) {
     // Parse addresses from the backtrace string
     // Backtraces are stored as comma-separated hex addresses
     let addresses: Vec<&str> = backtrace_str.split(',').filter(|s| !s.is_empty()).collect();
 
     for (i, addr_str) in addresses.iter().enumerate() {
         if let Ok(address) = parse_hex_address(addr_str) {
-            // Convert to relative address by subtracting ASLR offset
-            // let relative_addr = if address >= aslr_offset {
-            //     (address - aslr_offset) as u32
-            // } else {
-            //     // If address is less than ASLR offset, it might already be relative
-            //     address as u32
-            // };
-
             // Look up the symbol
             let symbol = symbol_map
                 .lookup(LookupAddress::Relative(address as u32))
