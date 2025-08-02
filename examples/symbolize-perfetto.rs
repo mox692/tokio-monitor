@@ -12,7 +12,7 @@
 //
 //
 
-use hopframe::symbolize::{read_aslr_offset, LookupAddress, SymbolMapBuilder};
+use hopframe::symbolize::{LookupAddress, SymbolMapBuilder};
 use prost::Message;
 use std::fs::File;
 use std::io::Read;
