@@ -117,5 +117,9 @@ path = "flight-recorder-backtrace.rs"
 name = "symbolize-perfetto"
 path = "symbolize-perfetto.rs"
 
+[[example]]
+name = "symbolize-perfetto2"
+path = "symbolize-perfetto2.rs"
+
 [lints]
 workspace = true
