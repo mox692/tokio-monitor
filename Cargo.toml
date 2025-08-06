@@ -6,7 +6,7 @@ members = [
   "tokio-test",
   "tokio-stream",
   "tokio-util",
-  "hopframe",
+  # "hopframe",
   "rt-trace",
 
   # Internal
