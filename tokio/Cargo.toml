@@ -1,25 +1,28 @@
 [package]
-name = "tokio"
+name = "tokio-monitor"
 # When releasing to crates.io:
 # - Remove path dependencies
 # - Update doc url
 #   - README.md
 # - Update CHANGELOG.md.
 # - Create "v1.x.y" git tag.
-version = "1.45.1"
+version = "0.1.0"
 edition = "2021"
 rust-version = "1.70"
-authors = ["Tokio Contributors <team@tokio.rs>"]
+authors = ["Tokio Contributors <team@tokio.rs>", "Motoyuki Kimura <moymoymox@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-repository = "https://github.com/tokio-rs/tokio"
-homepage = "https://tokio.rs"
+repository = "https://github.com/mox692/tokio-monitor"
 description = """
-An event-driven, non-blocking I/O platform for writing asynchronous I/O
-backed applications.
+Fork project of tokio-rs with additional runtime monitoring support
 """
 categories = ["asynchronous", "network-programming"]
 keywords = ["io", "async", "non-blocking", "futures"]
+
+# This is needed to minimize the diff with upstream
+[lib]
+name        = "tokio"
+path        = "src/lib.rs"
 
 [features]
 # Include nothing by default
