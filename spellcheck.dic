@@ -185,6 +185,7 @@ mut
 mutex
 Mutex
 Nagle
+namespace
 nonblocking
 nondecreasing
 noop
