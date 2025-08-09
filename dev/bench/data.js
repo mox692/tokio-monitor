@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754723975488,
+  "lastUpdate": 1754724152016,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -1155,6 +1155,54 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 691943,
             "range": "± 40294",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "moymoymox@gmail.com",
+            "name": "Motoyuki Kimura",
+            "username": "mox692"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "af5f7c8d699701f561cc627f2cd4f0c78bbd3140",
+          "message": "adopt hopframe changes (#34)",
+          "timestamp": "2025-08-09T16:14:47+09:00",
+          "tree_id": "ea3c37a764e04ceb0e1d39e715dae76087feb061",
+          "url": "https://github.com/mox692/tokio-monitor/commit/af5f7c8d699701f561cc627f2cd4f0c78bbd3140"
+        },
+        "date": 1754724150177,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2036565,
+            "range": "± 110517",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 661340,
+            "range": "± 55536",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2153249,
+            "range": "± 90135",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 687161,
+            "range": "± 59412",
             "unit": "ns/iter"
           }
         ]
