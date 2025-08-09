@@ -84,8 +84,8 @@ signal = [
 sync = []
 test-util = ["rt", "sync", "time"]
 time = []
-runtime-tracing = ["dep:rt-trace"]
-runtime-tracing-backtrace = ["dep:hopframe"]
+runtime-tracing = ["dep:rt-trace", "rt"]
+runtime-tracing-backtrace = ["dep:hopframe", "runtime-tracing", "macros"]
 
 [dependencies]
 tokio-macros = { version = "~2.5.0", path = "../tokio-macros", optional = true }

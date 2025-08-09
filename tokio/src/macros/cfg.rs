@@ -508,7 +508,7 @@ macro_rules! cfg_not_taskdump {
 macro_rules! cfg_runtime_tracing {
     ($($item:item)*) => {
         $(
-            #[cfg(feature = "runtime-tracing")]
+            #[cfg(all(feature = "runtime-tracing", feature = "rt"))]
             $item
         )*
     };
@@ -520,6 +520,7 @@ macro_rules! cfg_runtime_tracing_backtrace {
             #[cfg(all(
                 feature = "runtime-tracing",
                 feature = "runtime-tracing-backtrace",
+                feature = "macros",
                 any(all(target_os = "linux", target_arch = "x86_64"), target_os = "macos"),
             ))]
             $item
