@@ -118,8 +118,7 @@ cfg_runtime_tracing_backtrace! {
        pub(crate) fn read_aslr_offset() -> u64 {
         use std::sync::OnceLock;
         static ASLR_OFFSET: OnceLock<u64> = OnceLock::new();
-        ASLR_OFFSET
-            .get_or_init(|| hopframe::symbolize::read_aslr_offset().expect("Failed to read ASLR offset"))
-            .clone()
+        *ASLR_OFFSET
+            .get_or_init(|| hopframe::aslr::read_aslr_offset().expect("Failed to read ASLR offset"))
     }
 }

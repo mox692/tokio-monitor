@@ -106,7 +106,7 @@ socket2 = { version = "0.5.5", optional = true, features = ["all"] }
 [target.'cfg(tokio_unstable)'.dependencies]
 tracing = { version = "0.1.29", default-features = false, features = ["std"], optional = true } # Not in full
 [target.'cfg(any(all(target_arch = "x86_64", target_os = "linux"), target_os = "macos"))'.dependencies]
-hopframe = { version = "0.1.0", optional = true }
+hopframe = { version = "0.2.0", optional = true, features = ["aslr"] }
 
 [target.'cfg(all(tokio_uring, target_os = "linux"))'.dependencies]
 io-uring = { version = "0.7.6", default-features = false }
