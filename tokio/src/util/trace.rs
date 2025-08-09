@@ -190,13 +190,14 @@ cfg_runtime_tracing_backtrace! {
     #[allow(unused)]
     pub(crate) fn gen_backtrace() -> String {
         use hopframe::unwinder::UnwindBuilder;
+        use crate::runtime::read_aslr_offset;
         use std::fmt::Write;
 
         let mut unwinder = UnwindBuilder::new().build();
         unwinder
             .unwind()
             .fold(String::new(), |mut acc, frame| {
-                write!(&mut acc, "{:?},", frame.address())
+                write!(&mut acc, "{:?},", frame.address_for_lookup() - read_aslr_offset())
                     .expect("writing to String cannot fail");
                 acc
             })

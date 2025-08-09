@@ -364,6 +364,11 @@ cfg_rt! {
     cfg_runtime_tracing! {
         mod flight_recorder;
         pub use flight_recorder::{Handle as FlightRecorderHandle, initialise, start, stop, flush_trace};
+
+        cfg_runtime_tracing_backtrace! {
+            #[allow(unused)]
+            pub(crate) use flight_recorder::read_aslr_offset;
+        }
     }
 
     mod builder;

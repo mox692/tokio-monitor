@@ -113,3 +113,12 @@ pub fn stop() {
 pub fn flush_trace<W: Write>(writer: &mut W) {
     rt_trace::flush(writer);
 }
+
+cfg_runtime_tracing_backtrace! {
+       pub(crate) fn read_aslr_offset() -> u64 {
+        use std::sync::OnceLock;
+        static ASLR_OFFSET: OnceLock<u64> = OnceLock::new();
+        *ASLR_OFFSET
+            .get_or_init(|| hopframe::aslr::read_aslr_offset().expect("Failed to read ASLR offset"))
+    }
+}

@@ -60,3 +60,16 @@ fn main() {
 
 The trace output would be created in your current directory `./trace.pftrace`. Then you
 can use [Perfetto-UI](https://ui.perfetto.dev/) to visualize the trace.
+
+
+# Features
+
+### Backtrace Features
+
+See `examples/flight-recorder-backtrace.rs`.
+
+### Symbolize
+
+```bash
+RUST_BACKTRACE=1 cargo run --package examples --example symbolize-perfetto -- ./test.pftrace ./target/debug/examples/flight-recorder-backtrace
+```
