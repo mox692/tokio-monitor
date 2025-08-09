@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754734828928,
+  "lastUpdate": 1754735103014,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -1559,6 +1559,54 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 692202,
             "range": "± 43177",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "moymoymox@gmail.com",
+            "name": "Motoyuki Kimura",
+            "username": "mox692"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "e1a7dd878478774857ea88a76df14a60fcd707a2",
+          "message": "Merge upstream (#35)",
+          "timestamp": "2025-08-09T19:21:20+09:00",
+          "tree_id": "3f69b790436f004c8acf2538b1cb2676fbc1cbf8",
+          "url": "https://github.com/mox692/tokio-monitor/commit/e1a7dd878478774857ea88a76df14a60fcd707a2"
+        },
+        "date": 1754735100749,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2105217,
+            "range": "± 154875",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 676297,
+            "range": "± 44338",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2207433,
+            "range": "± 72720",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 702283,
+            "range": "± 53219",
             "unit": "ns/iter"
           }
         ]
