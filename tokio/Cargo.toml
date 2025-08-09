@@ -38,7 +38,8 @@ full = [
   "rt-multi-thread",
   "signal",
   "sync",
-  "time"
+  "time",
+  "runtime-tracing"
 ]
 
 fs = []
