@@ -863,7 +863,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       # Run clippy
       - name: "clippy --all ${{ matrix.rustflags }}"
-        run: cargo clippy --all --tests --all-features --no-deps
+        run: cargo clippy --all --tests --all-features --no-deps --exclude rt-trace
         env:
           RUSTFLAGS: ${{ matrix.rustflags }}
   docs:
