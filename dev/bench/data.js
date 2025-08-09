@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754735925507,
+  "lastUpdate": 1754739113730,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -1695,6 +1695,54 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 674612,
             "range": "± 48938",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "moymoymox@gmail.com",
+            "name": "Motoyuki Kimura",
+            "username": "mox692"
+          },
+          "committer": {
+            "email": "noreply@github.com",
+            "name": "GitHub",
+            "username": "web-flow"
+          },
+          "distinct": true,
+          "id": "96794dd8d9e0202dca1534ad9523e8c617daf61e",
+          "message": "add runtime-tracing as a default feature (#38)",
+          "timestamp": "2025-08-09T20:29:11+09:00",
+          "tree_id": "5aa03bf4dd02a6077c8970708194cb7bdc76f669",
+          "url": "https://github.com/mox692/tokio-monitor/commit/96794dd8d9e0202dca1534ad9523e8c617daf61e"
+        },
+        "date": 1754739111685,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2149722,
+            "range": "± 87363",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 679372,
+            "range": "± 54598",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2285555,
+            "range": "± 56446",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 689108,
+            "range": "± 59121",
             "unit": "ns/iter"
           }
         ]
