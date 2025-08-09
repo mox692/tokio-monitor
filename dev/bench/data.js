@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754220407739,
+  "lastUpdate": 1754715307181,
   "repoUrl": "https://github.com/mox692/tokio-monitor",
   "entries": {
     "Rust Benchmark": [
@@ -847,6 +847,50 @@ window.BENCHMARK_DATA = {
             "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
             "value": 730925,
             "range": "± 46387",
+            "unit": "ns/iter"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "mox692",
+            "username": "mox692"
+          },
+          "committer": {
+            "name": "mox692",
+            "username": "mox692"
+          },
+          "id": "95e2b6d170a6df39aad621be3888b3b40de88c04",
+          "message": "adopt hopframe changes",
+          "timestamp": "2025-07-21T05:46:50Z",
+          "url": "https://github.com/mox692/tokio-monitor/pull/34/commits/95e2b6d170a6df39aad621be3888b3b40de88c04"
+        },
+        "date": 1754715304545,
+        "tool": "cargo",
+        "benches": [
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: true",
+            "value": 2039425,
+            "range": "± 79138",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: true, flush: false",
+            "value": 659955,
+            "range": "± 49298",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: true",
+            "value": 2132742,
+            "range": "± 55093",
+            "unit": "ns/iter"
+          },
+          {
+            "name": "flight_record/spawn_1000_tasks - trace: false, flush: false",
+            "value": 700032,
+            "range": "± 65590",
             "unit": "ns/iter"
           }
         ]
