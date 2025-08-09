@@ -18,8 +18,8 @@ env:
   rust_stable: stable
   rust_nightly: nightly-2025-01-25
   # Pin a specific miri version
-  rust_miri_nightly: nightly-2025-01-25
-  rust_clippy: '1.77'
+  rust_miri_nightly: nightly-2025-06-02
+  rust_clippy: '1.88'
   # When updating this, also update:
   # - README.md
   # - tokio/README.md
@@ -360,6 +360,17 @@ jobs:
         include:
           - os: ubuntu-latest
     steps:
+      - name: check if io-uring is supported in the CI environment
+        run: |
+          # Try to read the io-uring setting in the kernel config file.
+          # https://github.com/torvalds/linux/blob/75f5f23f8787c5e184fcb2fbcd02d8e9317dc5e7/init/Kconfig#L1782-L1789
+          CONFIG_FILE="/boot/config-$(uname -r)"
+          echo "Checking $CONFIG_FILE for io-uring support"
+          if ! grep -q "CONFIG_IO_URING=y" "$CONFIG_FILE"; then
+            echo "Error: io_uring is not supported"
+            exit 1
+          fi
+
       - uses: actions/checkout@v4
       - name: Install Rust ${{ env.rust_stable }}
         uses: dtolnay/rust-toolchain@stable
@@ -588,9 +599,9 @@ jobs:
           - target: armv5te-unknown-linux-gnueabi
             os: ubuntu-latest
           - target: armv7-unknown-linux-gnueabihf
-            os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
+            os: ubuntu-24.04-arm
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
+            os: ubuntu-24.04-arm
             rustflags: --cfg tokio_taskdump
           - target: aarch64-pc-windows-msvc
             os: windows-11-arm
@@ -634,9 +645,9 @@ jobs:
           - target: armv5te-unknown-linux-gnueabi
             os: ubuntu-latest
           - target: armv7-unknown-linux-gnueabihf
-            os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
+            os: ubuntu-24.04-arm
           - target: aarch64-unknown-linux-gnu
-            os: ubuntu-22.04-arm # TODO: update to 24.04 when https://github.com/rust-lang/rust/issues/135867 solved
+            os: ubuntu-24.04-arm
             rustflags: --cfg tokio_taskdump
           - target: aarch64-pc-windows-msvc
             os: windows-11-arm
@@ -837,6 +848,11 @@ jobs:
   clippy:
     name: clippy
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rustflags:
+          - ""
+          - "--cfg tokio_unstable --cfg tokio_taskdump --cfg tokio_uring -Dwarnings"
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust ${{ env.rust_clippy }}
@@ -846,9 +862,10 @@ jobs:
           components: clippy
       - uses: Swatinem/rust-cache@v2
       # Run clippy
-      - name: "clippy --all"
+      - name: "clippy --all ${{ matrix.rustflags }}"
         run: cargo clippy --all --tests --all-features --no-deps --exclude rt-trace
-
+        env:
+          RUSTFLAGS: ${{ matrix.rustflags }}
   docs:
     name: docs
     runs-on: ${{ matrix.run.os }}
@@ -1046,10 +1063,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Rust 1.81
+      - name: Install Rust 1.88.0
         uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: 1.81
+          toolchain: 1.88.0
       - name: Install wasm-pack
         uses: taiki-e/install-action@wasm-pack
 
@@ -1240,3 +1257,28 @@ jobs:
               echo 'Please remove trailing whitespace from these lines.'
               exit 1
           fi
+
+  get-latest-kernel-version:
+    runs-on: ubuntu-latest
+    outputs:
+      kernel_version: ${{ steps.fetch.outputs.kernel_version }}
+    steps:
+      - name: Fetch latest stable kernel
+        id: fetch
+        run: |
+          KERNEL_VERSION=$(curl -s https://www.kernel.org/releases.json | jq -r '.latest_stable.version')
+          echo "kernel_version=$KERNEL_VERSION" >> $GITHUB_OUTPUT
+
+  test-io-uring-on-specific-kernel-versions:
+    name: Test io_uring on Linux ${{ matrix.kernel_version }}
+    needs: [get-latest-kernel-version, basics]
+    strategy:
+      matrix:
+        kernel_version:
+          # A latest stable kernel version
+          - ${{ needs.get-latest-kernel-version.outputs.kernel_version }}
+          # A kernel version that doesn't support io_uring
+          - '4.19.325'
+    uses: ./.github/workflows/uring-kernel-version-test.yml
+    with:
+      kernel_version: ${{ matrix.kernel_version }}
