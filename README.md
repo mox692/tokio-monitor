@@ -9,52 +9,48 @@ Just replace the dependency:
 ```diff
 [dependencies]
 -  tokio = { version = "1", features = ["full"] }
-+ tokio-monitor = { git = "https://github.com/mox692/tokio-monitor", features = ["full"]}
++ tokio = { package = "tokio-monitor", version = "1", features = ["full"]}
 ```
 
-Here is a simple example:
+Here is a simple example (you can also refer to `examples/flight-recorder.rs`):
 
 ```rust,ignore
 fn main() {
-    use std::{
-        fs::File,
-        sync::atomic::{AtomicUsize, Ordering},
-    };
-    use tokio::runtime::{FlightRecorder, PerfettoFlightRecorder};
-
-    async fn foo() {
-        let mut handles = vec![];
-        for i in 0..10 {
-            handles.push(tokio::task::spawn(async move {
-                tokio::time::sleep(std::time::Duration::from_micros(i * 10)).await;
-            }));
-        }
-
-        for handle in handles {
-            let _ = handle.await;
-        }
-    }
-
-    let mut file = File::create("./test.pftrace").unwrap();
-    let mut recorder = PerfettoFlightRecorder::new();
-    recorder.initialize();
-    recorder.start();
-
     let rt = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
-        .thread_name_fn(|| {
-            static ATOMIC_ID: AtomicUsize = AtomicUsize::new(0);
-            let id = ATOMIC_ID.fetch_add(1, Ordering::SeqCst);
-            format!("tokio-runtime-worker-{}", id)
-        })
         .build()
         .unwrap();
 
     rt.block_on(async {
-        tokio::spawn(async { foo().await }).await.unwrap();
+        run().await;
     });
+}
 
-    recorder.flush_trace(&mut file);
+async fn run() {
+    // Initialize the flight recorder
+
+    let flight_recorder = tokio::runtime::Handle::current().flight_recorder();
+
+    flight_recorder.initialize();
+    flight_recorder.start();
+
+    // Spawn some tasks
+    let mut handles = Vec::new();
+    for i in 0..100 {
+        handles.push(tokio::spawn(async move {
+            // Simulate some work
+            tokio::time::sleep(std::time::Duration::from_micros(i * 100)).await;
+            println!("Task {} completed", i);
+        }));
+    }
+
+    for handle in handles {
+        let _ = handle.await;
+    }
+
+    // Flush the trace to a file
+    let mut file = std::fs::File::create("./test.pftrace").unwrap();
+    flight_recorder.flush_trace(&mut file);
 }
 ```
 

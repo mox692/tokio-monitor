@@ -1,37 +1,34 @@
-fn main() {
-    let rt = tokio::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .unwrap();
+use std::{fs::File, io::Result, time::Duration};
+use tokio::{runtime::Handle, task, time};
 
-    rt.block_on(async {
-        run().await;
-    });
-}
-
-async fn run() {
+#[tokio::main(flavor = "multi_thread", worker_threads = 4)]
+async fn main() -> Result<()> {
+    // Get the flight recorder handle from the current runtime handle
+    let recorder = Handle::current().flight_recorder();
     // Initialize the flight recorder
+    recorder.initialize();
+    // Start the flight recorder
+    recorder.start();
 
-    let flight_recorder = tokio::runtime::Handle::current().flight_recorder();
+    // Spawn tasks
+    let tasks: Vec<_> = (0..100)
+        .map(|i| {
+            task::spawn(async move {
+                time::sleep(Duration::from_micros((i * 100) as u64)).await;
+                println!("Task {} completed", i);
+            })
+        })
+        .collect();
 
-    flight_recorder.initialize();
-    flight_recorder.start();
-
-    // Spawn some tasks
-    let mut handles = Vec::new();
-    for i in 0..100 {
-        handles.push(tokio::spawn(async move {
-            // Simulate some work
-            tokio::time::sleep(std::time::Duration::from_micros(i * 100)).await;
-            println!("Task {} completed", i);
-        }));
+    // Await all tasks
+    for t in tasks {
+        let _ = t.await;
     }
 
-    for handle in handles {
-        let _ = handle.await;
-    }
+    let mut file = File::create("./test.pftrace")?;
 
-    // Flush the trace to a file
-    let mut file = std::fs::File::create("./test.pftrace").unwrap();
-    flight_recorder.flush_trace(&mut file);
+    // This will write the trace to the file
+    recorder.flush_trace(&mut file);
+
+    Ok(())
 }

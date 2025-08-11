@@ -10,7 +10,7 @@ cargo-fuzz = true
 [dependencies]
 libfuzzer-sys = "0.4"
 
-[dependencies.tokio]
+[dependencies.tokio-monitor]
 path = ".."
 features = ["fs","net","process","rt","sync","signal","time"]
 

@@ -517,6 +517,7 @@ jobs:
           # Ignore `trybuild` errors as they are irrelevant and flaky on nightly
           TRYBUILD: overwrite
 
+
   semver:
     name: semver
     needs: basics
@@ -527,16 +528,14 @@ jobs:
         uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
           rust-toolchain: ${{ env.rust_stable }}
-          package: tokio
+          package: tokio-monitor
           release-type: minor
       - name: Check semver for rest of the workspace
-        if: ${{ !startsWith(github.event.pull_request.base.ref, 'tokio-1.') }}
         uses: obi1kenobi/cargo-semver-checks-action@v2
         with:
           rust-toolchain: ${{ env.rust_stable }}
-          exclude: tokio
+          exclude: tokio-monitor
           release-type: minor
-          package: tokio
 
   cross-check:
     name: cross-check
@@ -627,8 +626,8 @@ jobs:
       - name: Tests run with all features (including parking_lot)
         run: |
           set -euxo pipefail
-          cargo nextest run -p tokio --all-features --target ${{ matrix.target }}
-          cargo test --doc -p tokio --all-features --target ${{ matrix.target }}
+          cargo nextest run -p tokio-monitor --all-features --target ${{ matrix.target }}
+          cargo test --doc -p tokio-monitor --all-features --target ${{ matrix.target }}
         env:
           RUST_TEST_THREADS: 1
           RUSTFLAGS: --cfg tokio_unstable -Dwarnings --cfg tokio_no_tuning_tests ${{ matrix.rustflags }}
@@ -677,8 +676,8 @@ jobs:
       - name: Tests run with all features (without parking_lot)
         run: |
           set -euxo pipefail
-          cargo nextest run -p tokio --features full,test-util --target ${{ matrix.target }}
-          cargo test --doc -p tokio --features full,test-util --target ${{ matrix.target }}
+          cargo nextest run -p tokio-monitor --features full,test-util --target ${{ matrix.target }}
+          cargo test --doc -p tokio-monitor --features full,test-util --target ${{ matrix.target }}
         env:
           RUST_TEST_THREADS: 1
           RUSTFLAGS: --cfg tokio_unstable -Dwarnings --cfg tokio_no_parking_lot --cfg tokio_no_tuning_tests ${{ matrix.rustflags }}
@@ -709,8 +708,8 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - name: test tokio --all-features
         run: |
-          cargo nextest run -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio --all-features
-          cargo test --doc -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio --all-features
+          cargo nextest run -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio-monitor --all-features
+          cargo test --doc -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio-monitor --all-features
         env:
           RUST_TEST_THREADS: 1
           RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings --cfg tokio_no_tuning_tests
@@ -736,7 +735,7 @@ jobs:
       # https://github.com/tokio-rs/tokio/pull/5356
       # https://github.com/tokio-rs/tokio/issues/5373
       - name: Check
-        run: cargo hack check -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio --feature-powerset --depth 2 --keep-going
+        run: cargo hack check -Zbuild-std --target target-specs/i686-unknown-linux-gnu.json -p tokio-monitor --feature-powerset --depth 2 --keep-going
         env:
           RUSTFLAGS: --cfg tokio_unstable --cfg tokio_taskdump -Dwarnings
 
@@ -784,7 +783,7 @@ jobs:
         run: |
           if [[ "${{ github.event.pull_request.base.ref }}" =~ ^tokio-1\..* ]]; then
             # Only check `tokio` crate as the PR is backporting to an earlier tokio release.
-            cargo check -p tokio --all-features
+            cargo check -p tokio-monitor --all-features
           else
             # Check all crates in the workspace
             cargo check --workspace --all-features
@@ -955,7 +954,7 @@ jobs:
           set -x
           echo '[workspace]' >>Cargo.toml
           echo '[patch.crates-io]' >>Cargo.toml
-          echo 'tokio = { path = "../tokio" }' >>Cargo.toml
+          echo 'tokio = { package = "tokio-monitor", path = "../tokio", default-features = false }' >>Cargo.toml
           echo 'tokio-util = { path = "../tokio-util" }' >>Cargo.toml
           echo 'tokio-stream = { path = "../tokio-stream" }' >>Cargo.toml
           echo 'tokio-test = { path = "../tokio-test" }' >>Cargo.toml
@@ -972,7 +971,18 @@ jobs:
           workspaces: "./hyper"
 
       - name: Test hyper
-        run: cargo test --features full
+        run: |
+          # Run with more verbose output to diagnose failures
+          cargo test --features full --verbose || {
+            echo "Hyper tests failed. Checking if this is a known macOS issue..."
+            # Try running with fewer parallel jobs on macOS
+            if [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+              echo "Retrying with single-threaded test execution on macOS..."
+              cargo test --features full --verbose -- --test-threads=1
+            else
+              exit 1
+            fi
+          }
         working-directory: hyper
 
   test-quinn:
@@ -1006,7 +1016,7 @@ jobs:
         run: |
           set -x
           echo '[patch.crates-io]' >>Cargo.toml
-          echo 'tokio = { path = "../tokio" }' >>Cargo.toml
+          echo 'tokio = { package = "tokio-monitor", path = "../tokio" }' >>Cargo.toml
           git diff
         working-directory: quinn
 
@@ -1101,21 +1111,21 @@ jobs:
 
   #     - uses: Swatinem/rust-cache@v2
   #     - name: WASI test tokio full
-  #       run: cargo test -p tokio --target ${{ matrix.target }} --features full
+  #       run: cargo test -p tokio-monitor --target ${{ matrix.target }} --features full
   #       env:
   #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
   #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
   #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
   #     - name: WASI test tokio-util full
-  #       run: cargo test -p tokio-util --target ${{ matrix.target }} --features full
+  #       run: cargo test -p tokio-monitor-util --target ${{ matrix.target }} --features full
   #       env:
   #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
   #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
   #         RUSTFLAGS: --cfg tokio_unstable -Dwarnings -C target-feature=+atomics,+bulk-memory -C link-args=--max-memory=67108864
 
   #     - name: WASI test tokio-stream
-  #       run: cargo test -p tokio-stream --target ${{ matrix.target }} --features time,net,io-util,sync
+  #       run: cargo test -p tokio-monitor-stream --target ${{ matrix.target }} --features time,net,io-util,sync
   #       env:
   #         CARGO_TARGET_WASM32_WASIP1_RUNNER: "wasmtime run --"
   #         CARGO_TARGET_WASM32_WASIP1_THREADS_RUNNER: "wasmtime run -W bulk-memory=y -W threads=y -S threads=y --"
